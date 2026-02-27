@@ -1,0 +1,23 @@
+[NAME]  places an order on an item.  
+
+[NAME] tries to make a payment, but their debit card gets declined due to insufficient funds.  
+
+[NAME] attempts to buy the whole stock of an item.  
+
+[NAME] wants to make a re-purchase of what they bought a few days ago.  
+
+[NAME] wants to know when an item will be restocked. 
+
+[NAME] wants to return an item, because they bought the wrong one.  
+
+[NAME] successfully creates an account.  
+
+[NAME] wants a refund, because the item appears to be “used”.  
+
+[NAME] wants to get advice on what type of recipes to do with a certain item. 
+
+[NAME] purchases an item, and it doesn't come as the quality described and wants to make a refund. 
+
+[NAME] wants to set up a payment plan because they currently have insufficient funds.  
+
+[NAME] wants to sell an item, so they make a posting for it. 
