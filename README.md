@@ -10,4 +10,4 @@ Tanya Parra-Sanchez - tps20005
 https://trello.com/invite/b/698e2401d961fa175dfd93cb/ATTI0aafb4599c5be319bcd05eab7bbbee941CE01B78/kanban-example
 
 # Figma Link
-https://www.figma.com/design/BSLN7DPrL5c7wJssytsNib/Milestone-3?node-id=0-1&t=AzbCvuIwDTRXsABr-1
+https://www.figma.com/design/WC4H5oVfW1L2QGnOgPAOV9/Untitled?node-id=0-1&t=dCUMJoSnfAYyCXJ7-1

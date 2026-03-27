@@ -1,0 +1,13 @@
+<mxfile host="65bd71144e">
+    <diagram id="NlNgpK_Gb8f4hrsHH6rs" name="Page-1">
+        <mxGraphModel dx="404" dy="1113" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="&lt;ol data-end=&quot;2100&quot; data-start=&quot;1574&quot;&gt;&lt;li data-end=&quot;1609&quot; data-start=&quot;1574&quot;&gt;User → Web App: Search product&lt;br&gt;&lt;/li&gt;&lt;br&gt;&lt;li data-end=&quot;1646&quot; data-start=&quot;1610&quot;&gt;Web App → Backend: GET products&lt;br&gt;&lt;/li&gt;&lt;br&gt;&lt;li data-end=&quot;1686&quot; data-start=&quot;1647&quot;&gt;Backend → Database: Query products&lt;br&gt;&lt;/li&gt;&lt;br&gt;&lt;li data-end=&quot;1726&quot; data-start=&quot;1687&quot;&gt;Database → Backend: Return results&lt;br&gt;&lt;/li&gt;&lt;br&gt;&lt;li data-end=&quot;1764&quot; data-start=&quot;1727&quot;&gt;Backend → Web App: Show products&lt;br&gt;&lt;/li&gt;&lt;br&gt;&lt;li data-end=&quot;1815&quot; data-start=&quot;1766&quot;&gt;User → Web App: Select item + click purchase&lt;br&gt;&lt;/li&gt;&lt;br&gt;&lt;li data-end=&quot;1852&quot; data-start=&quot;1816&quot;&gt;Web App → Backend: Create order&lt;br&gt;&lt;/li&gt;&lt;br&gt;&lt;li data-end=&quot;1899&quot; data-start=&quot;1853&quot;&gt;Backend → Payment System: Process payment&lt;br&gt;&lt;/li&gt;&lt;br&gt;&lt;li data-end=&quot;1946&quot; data-start=&quot;1900&quot;&gt;Payment System → Backend: Payment success&lt;br&gt;&lt;/li&gt;&lt;br&gt;&lt;li data-end=&quot;1984&quot; data-start=&quot;1948&quot;&gt;Backend → Database: Save order&lt;br&gt;&lt;/li&gt;&lt;br&gt;&lt;li data-end=&quot;2027&quot; data-start=&quot;1985&quot;&gt;Backend → Database: Update inventory&lt;br&gt;&lt;/li&gt;&lt;br&gt;&lt;li data-end=&quot;2065&quot; data-start=&quot;2028&quot;&gt;Backend → Web App: Confirmation&lt;br&gt;&lt;/li&gt;&lt;br&gt;&lt;li data-end=&quot;2100&quot; data-start=&quot;2066&quot;&gt;Web App → User: Show success&lt;/li&gt;&lt;/ol&gt;" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="310" width="1330" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

@@ -1,0 +1,70 @@
+<mxfile host="65bd71144e">
+    <diagram id="q466X-SjMSMbUBnLUg7X" name="Page-1">
+        <mxGraphModel dx="1254" dy="1113" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="5" value="" style="shape=ext;double=1;rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-5" y="120" width="350" height="830" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="" style="shape=actor;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="160" width="40" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="" style="shape=actor;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="230" y="150" width="40" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="Buyer" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="30" y="230" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="Farmer" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="230" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="Farmer Marketplace System" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="20" y="80" width="160" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="Browse Marketplace" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="260" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="Search Marketplace" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="310" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="View Product" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="360" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="Purchase Item" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="410" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="Repurchase Item" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="460" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="Leave Review" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="510" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="Take Survey" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="560" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="Get Recomendations" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="610" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="Share Product" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="660" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="Request Friend" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="710" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="Create Listing" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="190" y="260" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="Update Inventory" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="190" y="310" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="Upload Bulk Inventory" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="190" y="360" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="View Analytics" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="190" y="410" width="120" height="40" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
