@@ -138,7 +138,7 @@ export default function App() {
 
   async function handleOpenMessages(product) {
     setActiveProduct(product);
-    setmessages([]);
+    setMessages([]);
     setMessageError("");
     setLoadingMessages(true);
 

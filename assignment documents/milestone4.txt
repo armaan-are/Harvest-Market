@@ -1,0 +1,73 @@
+Milestone Delivery #4
+CSE-2102 Group Project - Spring 2025
+Design Ar@facts
+Deadline: 11:59pm, March 27
+Pre-Requisite
+• Feature list from Milestone #2
+• Figma designs from Milestone #3
+Project Board
+• Create cards and assign them to teammates for all work rela@ng to this milestone
+delivery.
+• Keep your project board up-to-date
+Design Ar@facts
+• Your team will create various design diagrams to document your design. We call these
+"ar@facts" because they will remain as important pieces of informa@on that con@nue to
+have value long aWer your system is implemented.
+• Make them as complete as possible based on what you know about your project so far.
+You will con@nue to update them throughout the semester.
+• Your scenarios, user stories, feature list, and Figma UX prototype will inform the detail
+you put into these diagrams. These diagrams should naturally ﬂow from the work you
+have already done.
+• Use DrawIO for all diagrams. Name the ﬁles using this conven@on, where NN is two-digit
+number (01, 02, 03, ...) and xxxxxxxx is a meaningful name that represents what the
+diagram is depic@ng:
+o seq-NN-xxxxxxxx
+o usecase-farm-market
+o er-farm-market
+• Use Case Diagram (1 diagram)
+o Iden@ty the diﬀerent types of users in your system
+o Create ovals for every major ac@on those users will take in your system
+o Associate the users to the correct ac@ons in your diagram
+• Sequence Diagram (1 sequence diagram for every dis@nct ﬂow)
+o Iden@fy the major ﬂows of your system. For instance, one ﬂow might be the
+steps through the system when someone places an order. Another ﬂow might be
+the login process.
+o Draw a sequence for every major and unique ﬂow through the system. If you ﬁnd
+that two ﬂows have the iden@cal steps and path, create a single sequence and
+name it something more generic that reﬂects that fact.
+o Name each diagram something that reﬂects what ﬂow it is depic@ng.
+o You should have at least 4 sequence diagrams.
+• ER Diagram (1 diagram)
+o Create a single ER Diagram that reﬂects your data model for the project. Use the
+following bullets as steps in crea@ng the required detail for the diagram:
+§ Iden@ty the types of data you will need in your database.
+§ Categorize your data into groupings or "tables".
+§ Iden@fy what data type is most appropriate for each table.
+§ Iden@fy the primary key for each table. Note: you may need to add a
+simple integer ﬁeld to a table to make the rows unique.
+§ Iden@fy the foreign keys that will link the tables together. Determine the
+cardinality of those rela@onships. (E.g. is it one-to-one, one-to-many, or
+many-to-many?) Show the linkage lines and the cardinality on your
+diagram.
+Git
+• Create a feature branch
+• Add the source DrawIO ﬁles (not a PDF or screenshot!) to the "docs" folder. You should
+have a separate ﬁle for every sequence diagram, one for the use case diagram, and one
+for the ER Diagram.
+• Push the feature branch. Open a PR for merging to develop. Open a PR for merging to
+main.
+Grading
+• One team member will submit a PDF version of the Sequence Diagram to HuskyCT. (One
+submission per team.) You will be graded by what is in your git repo "docs" folder. You
+are simply uploading to HuskyCT so that TAs can leverage HuskyCT for grading purposes.
+• Make sure you have all your source ﬁles in the "docs" folder on git.
+• You may submit mul@ple @me prior to the deadline. It is strongly recommended you do
+so in case you run into any last minute technical or team issues.
+• You will meet with a TA during your lab. Your team may not yet be complete with all the
+milestone tasks, but your TA will be looking at:
+o Current status of your project board
+o Current status of your ar@facts
+o Did your ar@facts ﬂow from your previous milestones
+o Team collabora@on and communica@on.
+• Reminder: you must use DrawIO to draw your diagrams. The use of AI image crea@on
+tools in not allowed.

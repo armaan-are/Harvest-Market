@@ -1,0 +1,56 @@
+Milestone Delivery #1
+CSE-2102 Group Project - Spring 2026
+Deadline: 11:59pm, Feb 20
+Project Board
+• Create a single team Trello board that the enJre group will use to collaborate on the
+group project
+• Invite the other team members to join the board
+• Invite all TAs in your lab secJon to join your Trello board
+• Determine if your team will use Scrum or Kanban
+• Populate your board with cards for tasks relaJng to this Milestone #1 delivery. In other
+words, begin using your board to plan all the acJviJes that are needed to complete
+milestone #1.
+• Assign tasks among the team members. (Note: do not assign any tasks to or create cards
+for the TAs. They are simply observers to your process.)
+• Keep the project board up-to-date throughout the week leading up to the delivery date
+by moving cards or adding cards, and by changing assignments as necessary. (You will
+not delete cards/tasks when they are completed. Instead, you will move them if you are
+using Kanban or simply complete them if using Scrum.)
+GIT Repo
+• One team member should create a team git repo
+o Owner = the "CSE2102-Spring26" GitHub OrganizaJon
+o Name = use your team number that was given to you. For instance, if you are
+team 27, then your repo should be named "cse2102-spring26-Team27"
+o Make the repo PRIVATE!
+• Add the other team members as collaborators to the repo with "Admin" rights
+• All team members need to connect their local computers to the git repo. Use the clone
+command if you were not the team member that created the repo.
+• One team member should create the "develop" branch and push it to the server.
+• Create two branch protecJon rules, one for main and one for develop. You want to
+prevent anyone from deleJng these two branches. Test your rules by trying to delete the
+branches.
+• Each team member should create a feature branch oﬀ of develop.
+o Using Cursor, edit the README ﬁle and add your ﬁrst name, last name and neJd
+o Add/Commit/Push your feature branch to the server
+o Open a Pull Request to merge your branch into develop. Assign the PR to
+someone else on the team. (Coordinate so that each team member is assigned
+one PR to complete.)
+• Each team member should complete and close someone else's PR. Check the box to
+delete the feature branches when the PR is complete.
+• One team member should add the link to the Trello board into the README ﬁle
+• When all git tasks are done for this milestone, one team member should submit a PR to
+merge develop to main. Another team member should complete and close that PR.
+• Everyone should do a "git fetch" locally afer team members complete tasks on the
+server. And everyone should do "git pull" on their various local copies of develop and
+main.
+Grading
+• You will meet with a TA during lab. Your team may not yet be complete with all the
+milestone tasks, but your TA will be looking at the current status of your project board
+during this check-in and gauging the team collaboraJon and communicaJon. Team
+members that tried to be a lone-wolf (doing all the work) or the ghost (doing ligle to no
+work) will lose points from their individual grade for this milestone. But in general, all
+team members will typically get the same individual grade for this group milestone
+delivery.
+• One team member should submit a PDF to HuskyCT containing a screenshot(s) of your
+project board by the milestone deadline.
+• Your git repo will be graded based on the last commit/PR prior to the milestone
