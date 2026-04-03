@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: farm-backend
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    container_name: farm-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+      
+      
+      
