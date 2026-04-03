@@ -1,0 +1,79 @@
+Essential Features to Add to the Local Farm Marketplace
+CSE-2102 Group Project (Spring 2026)
+Based on the existing local-farm-marketplace-flask prototype, the following are the essential
+features students should implement on top of the starter code.
+1 Order Lifecycle (Transaction Engine) — Required
+The requirements specify non-instant orders with a strict approval lifecycle. The current app
+only records a one-step “purchase”; there is no order entity or status flow.
+Students should implement:
+• An orders (or equivalent) concept with status:
+– Pending: Buyer submits; inventory is soft-reserved (reserved quantity or reservation
+table), not immediately deducted.
+– Confirmed: Farmer accepts; reserved quantity is permanently deducted from the list-
+ing.
+– Ready for Pickup: Farmer marks order ready; buyer can be notified.
+– Completed: After (simulated) physical pickup; transaction closed.
+– Rejected/Cancelled: Farmer rejects or user cancels; release reserved inventory back
+to the listing.
+• New tables (e.g. orders, order items), APIs (create order, list orders, update status, cancel),
+and UI for both sides.
+2 Dashboards for Orders
+• Buyer: “My Orders” — List the current user’s orders with status (Pending, Confirmed, Ready
+for Pickup, Completed, Cancelled). Filter by status if desired.
+• Farmer: “Incoming Requests” — List orders in Pending for this farmer. Actions: Approve
+(to Confirmed) or Reject (release inventory). Optionally: mark Ready for Pickup.
+These are the dashboards explicitly required and depend on the order lifecycle above.
+3 Profiles
+• Neighbor (buyer) profile: Store contact information and a default “Home Location”
+(zip code) so location-based search/filter can work.
+1
+• Farm (seller) profile: Store and display Farm Name, Biography, Pickup Address, Op-
+erating Hours. Use on the farm’s public page and in order details.
+The current users table has only email, password hash, role; it must be extended (or linked to
+buyer profiles / farm profiles).
+4 Marketplace: Categories and Location
+• Product categorization: Products must be organized by tags such as Produce, Dairy, Meat,
+Baked Goods. Add categories/tags (table + product–category relation) and filter by category
+in API and UI.
+• Location filtering: “Search results must be filterable by location” (zip or radius). Farmers (or
+farms) need a location (e.g. zip or lat/long); buyers have Home Location (zip). Backend should
+support “products within X zip/radius.” Depends on the new profiles.
+5 Image Handling
+Real image uploads for product listings (not only a text image url). Backend: accept file
+uploads, store files (e.g. in backend/static/uploads), save path/URL in DB. Frontend: file in-
+put, preview, display stored image. This satisfies “actual image file uploads to display products
+(replacing text-based URL links).”
+6 Reviews and Trust
+• Verified reviews: Buyers can rate farmers (1–5 stars) and leave comments (e.g. reviews
+table: farmer id, buyer id, order id, rating, comment, created at).
+• Constraint: A review is allowed only after the related order has reached Completed. Enforce
+in the API (check order status before inserting a review).
+7 Role Isolation
+Ensure buyers cannot access farmer management dashboards (e.g. Incoming Requests,
+product CRUD, farm profile edit). Backend: keep role checks on all sensitive routes. Frontend:
+show “My Orders” and buyer-specific views only to buyers; show “Incoming Requests,” product
+CRUD, and farm profile only to farmers (and use React Router so those routes are protected by
+role).
+2
+8 Summary: What to Add on Top of This Project
+Priority Feature Why
+1 Order lifecycle Core “Transaction Engine”
+requirement.
+2 My Orders (buyer) and Incoming Requests (farmer) Explicitly required; depend
+on order lifecycle.
+3 Neighbor profile (contact + Home Location zip) Required for “local” and loca-
+tion filtering.
+4 Farm profile (Farm Name, Bio, Pickup Address, Operating Hours) Required.
+5 Product categories/tags (Produce, Dairy, Meat, Baked Goods) Required “categorization.”
+6 Location filtering (zip/radius) Required “filterable by loca-
+tion.”
+7 Real image upload for listings Required; replaces text URL.
+8 Reviews (1–5 stars + comment, only after Completed) Required “Community &
+Trust.”
+9 Role isolation (buyers cannot see farmer dashboards) Required.
+10 React Router + CI/CD + unit tests Required tech/process.
+Table 1: Essential features to add on top of the prototype.
+The current app already provides: dual roles, auth, product CRUD, purchases (as a single step),
+product-linked messaging, and similar products (AI). Implementing the order lifecycle first, then
+the two dashboards, then profiles, categories, location, images, and reviews will align the
+project

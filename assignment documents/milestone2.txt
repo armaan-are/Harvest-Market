@@ -1,0 +1,51 @@
+Milestone Delivery #2
+CSE-2102 Group Project - Spring 2026
+Deadline: 11:59pm, Feb 27
+Project Board
+• Create cards for all of the work in this milestone and assign cards to team members
+• Each team member should update the board as they progress with their tasks
+Personas
+• Create 4 diﬀerent personas that represent the types of users you imagine would use the
+Local Farm Marketplace website.
+• Each persona must have: a picture and basic biographic informaQon
+• Use the lecture slides as an example of how to develop each persona more deeply
+Requirements
+• Use the provided requirements in the Group Project document as a starQng point.
+• Turn the provided paragraphs into a bulleted list of succinct requirements
+• Ask quesQons on the #group-project-quesQons Discord channel if you need any
+clariﬁcaQons
+• Monitor the #group-project-quesQons Discord channel for answers given to other
+groups. Incorporate these changes into your requirement list.
+• Make sure you have at least three non-funcQonal requirements in your list
+• Review your requirement to make sure they are: Testable, Clear, Complete, Trackable,
+Necessary, and Comprehensible
+Scenarios
+• Create at least 4 scenarios that imagine one of your personas using the system
+• Scenarios are longer-winded descripQons. These will sQmulate your thinking and allow
+you to progress the next secQons well.
+User Stories
+• Create at least 12 user stories that describe a user doing something in your system
+• User stories are succinct one-sentence statements in the format: "As a <role>, I <want /
+need> to <do something>"
+Features
+• Develop a list of features for your Local Farm Marketplace
+• Your feature list should ﬂow naturally from your User Stories, Scenarios, and
+Requirements. If you think of a feature that is not reﬂected in your user stories or
+scenarios, consider creaQng a new user story or scenario.
+• You are not required to have a speciﬁc number of features for this milestone, but you
+need to list all of the features that can logically be obtained from the User Stories,
+Scenarios, and Requirements you submit in the milestone.
+• Check your feature list to make sure they deﬁne the: Input, AcQvaQon, AcQon, and
+Output
+• Verify your features are: Independent of one another, coherent (single purpose, no side
+eﬀects), and relevant to the user.
+Grading
+• Create a folder in the root of your git repo called "documentaQon". For each arQfact,
+o Store the source ﬁle of each arQfact in the documentaQon repo folder
+o Store PDF of each arQfact in the documentaQon repo folder
+• Submit one of the PDFs to HuskyCT
+• You will meet with a TA during lab. Your team may not yet be complete with all the
+milestone tasks, but your TA will be looking at:
+o Current status of your project board
+o Current status of your Personas, Requirements, Scenarios, Stories and Features
+o Team collaboraQon and communicaQon.

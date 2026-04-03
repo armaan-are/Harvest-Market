@@ -1,0 +1,36 @@
+Milestone Delivery #3
+CSE-2102 Group Project - Spring 2026
+Deadline: 11:59pm, March 6
+Pre-Requisite
+• Feature list from Milestone #2
+Project Board
+• Create cards and assign them to teammates for all work relaNng to this milestone
+delivery.
+• Keep your project board up-to-date
+Figma
+• Create a clickable wireframe prototype for your Farm Marketplace applicaNon. Unlike
+the lab that used a mobile phone-sized screen layout, this prototype will be for a
+desktop browser.
+• Create every screen dictated by your Feature List from milestone #2.
+• Connect the screens using buUons, links, or other UX widgets.
+Git
+• Create a feature branch
+• Create a "docs" folder in the root of your repo
+• Place your milestone #2 document(s) into the "docs" folder. Store the word processing
+document, not the PDF.
+• Add the link to your prototype into the README ﬁle
+• Push the feature branch. Open a PR for merging to develop. Open a PR for merging to
+main.
+Grading
+• In a PDF ﬁle, paste the link for accessing your prototype.
+• One team member should submit the PDF to HuskyCT by the milestone deadline. You
+may submit mulNple Nme prior to the deadline. It is strongly recommended you do so in
+case you run into any last minute technical or team issues.
+• You will meet with a TA during your lab. Your team may not yet be complete with all the
+milestone tasks, but your TA will be looking at:
+o Current status of your project board
+o Current status of your prototype
+o Team collaboraNon and communicaNon.
+• Note: You are not being graded on the arNsNc nature of your prototype. So don't overly
+ﬁxate on gedng it to look too "preUy." But do the best you can. You are being graded on
+the completeness of your prototype and that it captures all your features
