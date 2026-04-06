@@ -1,0 +1,82 @@
+Milestone Delivery #6
+CSE-2102 Group Project - Spring 2026
+Database
+Deadline: 11:59pm, April 10
+Git
+• Use your exisIng team UConn GitHub repo for this milestone and for code delivered in
+future milestones.
+• Use Pull Requests for all merges to "develop" and "main". Assign the Pull Request to
+someone else on your team. That other team member will do a code review on your
+code prior to accepIng the pull request.
+Docker
+• Dockerize your backend server. It is VERY important for you to name your image so that
+it contains "TeamXX" where XX is your two-digit team number.
+• When you run your backend locally from now on, you will be building and running it as a
+Docker container.
+• Note: you can use the "pip freeze" command in your local terminal to idenIfy which
+python modules and version numbers to place in your requirements.txt file.
+Swagger
+• Import the flasgger module to generate the Swagger automaIcally from docstrings.
+• Make your docstrings as robust so that the swagger documentaIon is thorough.
+• Your Swagger should be viewable by accessing the /apidocs endpoint of your backend
+server at runIme, and it should allow the real-Ime tesIng of your API.
+Database
+• You will be connecIng your exisIng API to SQLite database. SQLite stores everything in a
+single file.
+o Create a .giIgnore in the root of your repo if you do not yet have one
+o Add your database file path and name to the .giIgnore. You do not want this file
+in your repo.
+• Create database iniIalizaIon code
+o Create code that is only intended to be called when the applicaIon runs the first
+Ime. That code will create the database schema according to your ER Diagram.
+§ Create the empty tables
+§ Create any data required to be in those table(s) for the first run.
+• Modify your API to fully use the database
+o Keep your stubs and mocks related to front-end input and the unit tests you
+created in the previous milestone. ConInue to use them in your automated unit
+tests.
+o Add the needed python code to leverage SQLite. Place that code in a file(s) that
+reflects good code organizaIon and minimizes code duplicaIon.
+o Modify your API code so that it fully uses the database instead of the stubs and
+mocks.
+• Do not import any other addiIonal python libraries beyond: sqlite3. (You may obviously
+conInue to import the libraries you were allowed to import from previous milestones.)
+• In your exisIng README file, give instrucIons to the TA on how they should (1) run your
+database iniIalizaIon code, and (2) start the backend API server. In other words, how do
+you run them? Give those same instrucIons so the TA can run all your code in the same
+exact way as you do.
+GitHub AcIons (GHA) - automate all of these items in your pipeline
+• ConInue to use your pylint on all python code
+• ConInue to use your exisIng pytests for all exisIng unit tests
+• Create addiIonal pytest unit tests to test the boundary condiIons of your API methods
+o Your pytests should make hep calls to your api. Do not simply call your methods
+as python funcIon calls.
+o Your tests should use database calls to insure that the state of the database is the
+expected result afer compleIng any given API call
+• Note: in your CICD pipeline make sure you use the "./backend" path for your linIng and
+tesIng in your pipeline because very soon you will have React code in the "frontend"
+folder and you don't want pylint and pytest trying run against that code.
+The "Vibe Coding" & AI Policy
+You are encouraged to use AI (vibe coding) for refactoring, debugging, and fixing existing code.
+However:
+• Prohibited: Using AI to automatically generate entire "fresh" features or core logic from
+scratch.
+• Requirement: You must explicitly document how AI was used throughout your project.
+Grading
+• For grading, the TAs will look at the last successful GitHub AcIon pipeline run on the
+"main" branch prior to the due date for this milestone. You will be graded on the code
+associated with that commit.
+o Be sure to give yourself Ime to complete the pull request process and for the
+pipeline to run! In other words, don't try and do this five minutes before
+midnight.
+o Don't forget to add instrucIons for the TA in your README file. You don't want
+the TA to conclude your code doesn't work simply because your instrucIons
+were incorrect. Therefore, list the instrucIons for running the backend directly
+and via Docker.
+• Submit a PDF that specifies where and how AI (vibe coding) was used. If no AI was used,
+include the statement “No AI tools have been used” in the PDF.
+• You will meet with a TAgi during your lab. Your team may not yet be complete with all the
+milestone tasks, but your TA will be looking at:
+o Current status of your project board
+o Current status of your API code
+o Team collaboraIon and communicaIon
