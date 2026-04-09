@@ -64,7 +64,7 @@ Build and run the backend container:
 docker compose up --build backend
 ```
 
-The backend Docker image is named `Team21-backend`.
+The backend Docker image is named `team21-backend`.
 
 The container command initializes the SQLite database and then starts the API server automatically.
 
