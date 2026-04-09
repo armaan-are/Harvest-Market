@@ -1,0 +1,167 @@
+API Contract
+
+This document describes the backend API for the Local Farm Marketplace project.
+These routes are backed by SQLite and seeded with starter data on first run.
+
+Base URL
+http://localhost:8000
+
+Authentication
+Protected routes expect this header:
+Authorization: Bearer <token>
+
+The token is returned from the login route.
+
+Endpoints
+
+GET /api/health
+Purpose: Confirm the backend is running.
+Input: none
+Output:
+- status: string
+- message: string
+Example response:
+{
+  "status": "ok",
+  "message": "Flask backend is running!"
+}
+
+POST /api/register
+Purpose: Create a new user account.
+Input:
+- email: string
+- password: string
+- role: string ("buyer" or "seller")
+Output:
+- message: string
+- userId: integer
+Example response:
+{
+  "message": "Registration successful",
+  "userId": 3
+}
+
+POST /api/login
+Purpose: Log in with an existing user account.
+Input:
+- email: string
+- password: string
+Output:
+- message: string
+- token: string
+- role: string
+- email: string
+- userId: integer
+Example response:
+{
+  "message": "Login successful",
+  "token": "mock-token-1-buyer",
+  "role": "buyer",
+  "email": "buyer@example.com",
+  "userId": 1
+}
+
+GET /api/products
+Purpose: Return all products.
+Input:
+- sort: string, optional
+Allowed values: default, price_asc, price_desc, popular
+Output:
+- array of product objects
+Product fields:
+- id: integer
+- title: string
+- description: string
+- price: float
+- image_url: string
+- seller_id: integer
+- purchase_count: integer
+
+POST /api/products
+Purpose: Create a product as a seller.
+Input:
+- title: string
+- description: string
+- price: float
+- quantity: integer, optional
+- image_url: string
+Output:
+- message: string
+- productId: integer
+Example response:
+{
+  "message": "Product created",
+  "productId": 3
+}
+
+PUT /api/products/<id>
+Purpose: Update a seller's own product.
+Input:
+- id: integer path parameter
+- title: string
+- description: string
+- price: float
+- quantity: integer, optional
+- image_url: string
+Output:
+- message: string
+Example response:
+{
+  "message": "Product updated"
+}
+
+DELETE /api/products/<id>
+Purpose: Delete a seller's own product.
+Input:
+- id: integer path parameter
+Output:
+- message: string
+Example response:
+{
+  "message": "Product deleted"
+}
+
+GET /api/messages?productId=<id>
+Purpose: Return messages for a product conversation.
+Input:
+- productId: integer query parameter
+Output:
+- array of message objects
+Message fields:
+- id: integer
+- product_id: integer
+- buyer_id: integer
+- seller_id: integer
+- sender_id: integer
+- sender_role: string
+- sender_email: string
+- content: string
+- created_at: string
+
+POST /api/messages
+Purpose: Send a message about a product.
+Input:
+- productId: integer
+- content: string
+Output:
+- message: string
+- messageId: integer
+Example response:
+{
+  "message": "Message sent",
+  "messageId": 2
+}
+
+POST /api/purchases
+Purpose: Create a pending order as a buyer and reserve inventory.
+Input:
+- productId: integer
+- quantity: integer, optional
+Output:
+- message: string
+- orderId: integer
+Example response:
+{
+  "message": "Purchase successful",
+  "orderId": 2
+}
