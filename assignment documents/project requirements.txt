@@ -1,0 +1,185 @@
+CSE-2102
+Introduc1on to So2ware Engineering
+Group Project Requirements
+Spring 2026
+Overview
+You will complete a group project that spans the en1re semester. This project has been
+designed to reinforce all of the topics in the syllabus and provide a hands-on learning
+experience.
+CSE-2102 is a group project course. Everyone in the course must par1cipate in the group project
+or you will not pass the course.
+Requirements
+System Overview
+The platform serves as a local marketplace connecting community members ("Neighbors") with
+local small-scale producers ("Farmers"). You will build a three tier web application to support
+this system. Development will be based on an existing prototype that provides core
+functionality, architectural fundamentals, and reference implementations. The prototype is
+missing some important features and techniques that this project is expected to use, but it still
+provides a solid foundation for your work.
+Starter code and documentation are available at:
+https://github.uconn.edu/CSE2102-Spring26/local-farm-exchange.git
+Core Functional Requirements
+• User Management & Security
+o Dual Roles: The system must support two distinct user types: Neighbors (Buyers)
+and Farmers (Sellers).
+o Secure Authentication: Users must be able to securely register and log in.
+Purchasing capabilities must be restricted exclusively to logged-in users.
+o Neighbor Profiles: Buyers must have a profile that stores contact information
+and a default "Home Location" (Zip Code) to facilitate local search.
+o Farm Profiles: Sellers must have a public profile displaying their Farm Name,
+Biography, Pickup Address, and Operating Hours.
+o Role Isolation: The system must ensure Buyers cannot access Farmer
+management dashboards.
+• Marketplace Inventory & Discovery
+o Inventory Management: Farmers must be able to Create, Read, Update, and
+Delete (CRUD) product listings.
+o Image Handling: Listings must support actual image file uploads to display
+products (replacing text-based URL links).
+o Categorization: Products must be organized by tags such as Produce, Dairy,
+Meat, and Baked Goods.
+o Location Filtering: The search results must be filterable by location, allowing
+buyers to see only products within a specific zip code or radius.
+• Transaction Engine (Order Lifecycle)
+o Non-Instant Orders: Unlike standard e-commerce, orders must not be instant.
+They must follow a strict approval lifecycle:
+§ Pending: Inventory is reserved ("soft lock") while waiting for approval.
+§ Confirmed: Farmer accepts the request; inventory is permanently
+deducted.
+§ Ready for Pickup: Farmer notifies the buyer that items are packed.
+§ Completed: Transaction is closed after the physical pickup occurs.
+o dashboards:
+§ Buyer View: A "My Orders" dashboard to track the status of active and
+past purchases.
+§ Farmer View: An "Incoming Requests" queue to Approve or Reject
+orders.
+o Cancellation Logic: If an order is rejected or cancelled, the system must
+automatically release the reserved inventory back to the listing.
+• Community & Trust
+o Contextual Messaging: A private chat/message system that allows Buyers and
+Sellers to communicate, specifically linked to a product or order context.
+o Verified Reviews: Buyers must be able to rate Farmers (1-5 stars) and leave
+comments.
+o Review Constraint: To prevent fraud, the system must restrict reviews so they
+can only be submitted after a transaction has reached the "Completed" state.
+Optional & Advanced Features
+• AI-Powered Discovery: An intelligent recommendation engine that suggests products
+based on semantic similarity (e.g., suggesting "Beeswax Candles" to a user viewing
+"Honey") rather than just keyword matching.
+• Pickup Scheduling: A system requiring buyers to select a specific time slot (e.g.,
+"Saturday 9:00–9:15 AM") during checkout to prevent overcrowding at the farm.
+• Dynamic Pricing: Automated logic that applies discounts to perishable items as they
+approach their expiration date.
+• Subscription Models (CSA): Support for recurring "Community Supported Agriculture"
+subscriptions, allowing buyers to sign up for weekly box pickups rather than one-time
+purchases.
+Group Dynamics
+• Teams will consist of 3 or 4 students from the same lab sec1on. Team members may be
+self chosen or assigned by the instructor. If you choose your own team, you must inform
+the instructor of your preferred teammates by Monday, Feb 2. Addi1onal team members
+may be added depending on team size.
+• Group members will take turns being the "lead" developer (aka. Tech Lead). This is
+mandatory. The Tech Lead will coordinate team communica1on and lead the
+presenta1on to the TA during the lab session.
+• Each team member is expected to put an equitable level of work into this project. All
+students must contribute. If you have someone(s) on your team not contribu1ng, that is
+your opportunity to draw a quality contribu1on out of that student. Help each other!
+Grading Guidelines
+• Milestones
+o Seven milestone deliveries will be required during the semester. Each of them
+will be graded.
+o Each milestone will have speciﬁc requirements posted in HCT
+§ If the milestone requires wri1ng code, you will be graded on code merged
+to the "main" branch as of the exact date/1me of the deliverable. Thus,
+there is no concept of "late" code submissions for these types of
+milestones.
+§ If the milestone requires crea1ng other "ar1facts," you will submit the
+milestone.
+• Each milestone is a submission from the en1re group as a single unit. If every student
+made a sa1sfactory contribu1on to the milestone, then all group members will receive
+the same grade based on the quality of that group submission. However, some students
+may have their score adjusted higher or lower based on their individual eﬀort.
+o NOTE: If one team member is not contribu1ng (aka. the "ghost"), the other team
+members need to reach out and try and mo1vate that team member. In the "real
+world" of so2ware engineering, those who can "draw out" the best from other
+people will be more successful than those who cannot. For this reason, everyone
+in the group will receive beger scores if everyone on the team is coopera1ng.
+o Do not try and do the en1re project yourself (aka. the "lone wolf"). Failing to
+work as a team could reduce the grade of the lone wolf.
+• You may only discuss the project with members of your group. No collabora1on with
+other groups is permiged.
+Tech Stack
+• You will create a 3-1er web applica1on using these technologies
+o React - Frontend
+o Python Flask - backend/API
+o SQLite - Database
+• Your project must use Docker containers. (The milestone requirements will inform you
+when this is required.) You will have AT LEAST two Docker containers (frontend, backend)
+in your ﬁnal project.
+Git
+• You must use git.uconn.edu for your Source Code Management (SCM) system
+o Create a private repo in the "CSE2012-Spring26" organiza1on.
+o Make sure all team members are given full access to the repo
+o Create a folder structure in your repo that separates the layers of your project.
+For instance, one folder for "frontend" that contains all of your React code.
+Another folder for "backend" that contains your API.
+• You must use GitHub Ac1ons for Con1nuous Integra1on / Con1nuous Delivery (CICD)
+o Create a "develop" branch from "main"
+o Each developer should create feature branches oﬀ of "develop"
+o Pull requests (aka. merge request) should be used for all code merged into the
+"develop" branch
+o Merge "develop" into "main" for all milestone deliveries! TAs will be looking at
+"main" for your completed code.
+o Unit tests should run whenever code is merged to "develop" or "main". Unit tests
+should include input valida1on.
+3-Tier Design
+Your applica1on will be designed in three layers.
+• Frontend
+o Your frontend user interface will call the backend API to obtain/store data
+o Your frontend will be a Single Page Applica1on (SPA)
+• Backend
+o Your backend API will handle communica1on to/from the database
+• Database
+o Your team will design a simple rela1onal database model for storing the data
+collected and displayed by your applica1on. Create mul1ple tables that have
+rela1onships with each other.
+However, just because your applica1on is designed in three layers, that doesn't mean that all
+three layers are deployed as standalone units. For instance, the backend layer will be deployed
+with the database layer in a single Docker container.
+Frontend
+These are the guidelines and restric1ons for your frontend. Do not use any addi1onal packages
+or libraries in the crea1on of your frontend.
+• Create your frontend app using vite, as you did in your lab
+• Use React Router to do the rou1ng naviga1on
+• Use Fetch or Axios for the API calls
+• You may use Bootstrap or React-Bootstrap to improve the appearance of your frontend
+Backend
+• You APIs must use return valid JSON as the format of the data response
+Extra Credit OpportuniBes
+For each of the extra credit agempted, you must document the following in a single and
+separate PDF submiged to HCT:
+• Document the name feature branch(es) used. (You will s1ll merge the feature branch
+into "main", but we want to know what feature branch was used.)
+• Describe how your code implements the requirement. I want you to show you
+understand the code you wrote and submiged.
+• Document any sources or assistance used in your solu1on, including how AI tools are
+used.
+Extra credit opportuni1es will be given throughout the semester. The following requirements
+are example opportuni1es for extra credit on the group project:
+• Implement a Circuit Breaker pagern
+o Implement code so that every API call is protected by a circuit breaker.
+o Implement from scratch. The only python module you may import is "1me".
+o Create unit tests that test your circuit breaker can be set and reset by each API
+call. Unit tests should run as part of the CICD pipeline.
+• OAuth Login
+o Implement OAuth with a social media iden1ty provider (e.g. Google, Facebook,
+X) by using Auth0.
+o Note: you will need to ﬁrst implement the "Registra1on and Login screen" logic
+before agemp1ng this extra credit.
+• Cloud Deployment
+o Teams wan1ng a tough challenge have the op1on of agemp1ng to deploy to the
+AWS cloud. Warning: this will require a lot of extra work. Since the lecture
+material on cloud in this course is high level, agemp1ng this op1onal extra credit
+will require research and self-mo1va1on.
+o Please also note groups that deploy to the cloud are not exempt from achieving
+the goals of a local Docker-based deployment. For that reason, you need to be
+pragma1c on what you can achieve.

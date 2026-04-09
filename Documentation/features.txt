@@ -1,0 +1,5 @@
+Survey: Users can take a survey on their favorite products/sellers, so that the web app generates suggestions that best suit them.  
+
+Reviews: When a user clicks on an item, there can be a star rating. (e.g.  Farmer John Doe’s carrots are a 3.5/5 stars)  
+
+Share Button: Have users been able to send a link to a certain product via social media and/or through text.  
