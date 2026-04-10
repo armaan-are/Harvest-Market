@@ -79,4 +79,4 @@ include the statement “No AI tools have been used” in the PDF.
 milestone tasks, but your TA will be looking at:
 o Current status of your project board
 o Current status of your API code
-o Team collaboraIon and communicaIon
+o Team collaboraIon and communicaI

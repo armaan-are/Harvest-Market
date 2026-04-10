@@ -1,8 +1,7 @@
-version: "3.9"
-
 services:
   backend:
     build: ./backend
+    image: team21-backend
     container_name: farm-backend
     ports:
       - "8000:8000"

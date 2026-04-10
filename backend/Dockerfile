@@ -8,7 +8,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . ./backend/
 
 ENV PYTHONPATH=/app
+ENV TEAM21_DB_PATH=/app/backend/data/team21_market.db
 
 EXPOSE 8000
 
-CMD ["python", "-m", "backend.main"]
+CMD ["sh", "-c", "python -m backend.init_db && python -m backend.main"]

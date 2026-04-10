@@ -15,6 +15,7 @@ jobs:
     runs-on: self-hosted
     env:
       PYTHONPATH: .
+      PYLINTHOME: /tmp/pylint
 
     steps:
       - name: Check out repository

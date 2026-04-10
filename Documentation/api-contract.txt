@@ -1,7 +1,7 @@
 API Contract
 
-This document describes the milestone 5 API stubs for the Local Farm Marketplace project.
-These routes use mock in-memory data and do not connect to a real database.
+This document describes the backend API for the Local Farm Marketplace project.
+These routes are backed by SQLite and seeded with starter data on first run.
 
 Base URL
 http://localhost:8000
@@ -27,7 +27,7 @@ Example response:
 }
 
 POST /api/register
-Purpose: Create a new mock user account.
+Purpose: Create a new user account.
 Input:
 - email: string
 - password: string
@@ -42,7 +42,7 @@ Example response:
 }
 
 POST /api/login
-Purpose: Log in with a mock user account.
+Purpose: Log in with an existing user account.
 Input:
 - email: string
 - password: string
@@ -62,7 +62,7 @@ Example response:
 }
 
 GET /api/products
-Purpose: Return all mock products.
+Purpose: Return all products.
 Input:
 - sort: string, optional
 Allowed values: default, price_asc, price_desc, popular
@@ -83,6 +83,7 @@ Input:
 - title: string
 - description: string
 - price: float
+- quantity: integer, optional
 - image_url: string
 Output:
 - message: string
@@ -100,6 +101,7 @@ Input:
 - title: string
 - description: string
 - price: float
+- quantity: integer, optional
 - image_url: string
 Output:
 - message: string
@@ -151,12 +153,15 @@ Example response:
 }
 
 POST /api/purchases
-Purpose: Create a mock purchase as a buyer.
+Purpose: Create a pending order as a buyer and reserve inventory.
 Input:
 - productId: integer
+- quantity: integer, optional
 Output:
 - message: string
+- orderId: integer
 Example response:
 {
-  "message": "Purchase successful"
+  "message": "Purchase successful",
+  "orderId": 2
 }
