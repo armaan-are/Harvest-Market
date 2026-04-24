@@ -2,16 +2,13 @@
 
 from __future__ import annotations
 
-import os
-
-from backend.database import DEFAULT_DB_PATH, initialize_database
+from backend.db import DB_PATH, init_database
 
 
 def main() -> None:
     """Create the database schema and starter data."""
-    database_path = os.environ.get("TEAM21_DB_PATH", str(DEFAULT_DB_PATH))
-    path = initialize_database(database_path)
-    print(f"Initialized database at {path}")
+    init_database()
+    print(f"Initialized database at {DB_PATH}")
 
 
 if __name__ == "__main__":

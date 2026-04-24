@@ -1,11 +1,15 @@
-import { useState, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { API_BASE } from "./api";
 
+import AppShell from "./components/AppShell";
 import AuthPanel from "./components/AuthPanel";
-import ProductList from "./components/ProductList";
-import CreateProductForm from "./components/CreateProductForm";
+import CommunityPage from "./components/CommunityPage";
+import HomePage from "./components/HomePage";
+import MarketplacePage from "./components/MarketplacePage";
 import MessagesPanel from "./components/MessagesPanel";
-import SortBar from "./components/SortBar";
+import OrdersPage from "./components/OrdersPage";
+import ProfilePage from "./components/ProfilePage";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -14,6 +18,9 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [sortOrder, setSortOrder] = useState("default");
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [zipFilter, setZipFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [activeProduct, setActiveProduct] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -25,6 +32,22 @@ export default function App() {
 
   const [editTarget, setEditTarget] = useState(null);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [savingProduct, setSavingProduct] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [authPrompt, setAuthPrompt] = useState("");
+
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [orderFilter, setOrderFilter] = useState("all");
+
+  const [profile, setProfile] = useState(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  const [reviews, setReviews] = useState([]);
+  const [reviewOrders, setReviewOrders] = useState([]);
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
@@ -32,204 +55,473 @@ export default function App() {
 
     if (savedUser && savedToken) {
       try {
-        const u = JSON.parse(savedUser);
-        setCurrentUser({
-          id: u.userId,
-          role: u.role,
-          email: u.email,
-        });
+        const user = normalizeUser(JSON.parse(savedUser));
+        if (!user) {
+          throw new Error("Invalid saved session");
+        }
+        setCurrentUser(user);
         setToken(savedToken);
-      } catch {}
+      } catch {
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+      }
     }
   }, []);
 
-  useEffect(() => {
-    loadProducts();
-  }, [sortOrder]);
+  const authHeaders = useMemo(
+    () =>
+      token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : {},
+    [token]
+  );
 
-  async function loadProducts() {
-    setLoadingProducts(true);
-    try {
-      const res = await fetch(`${API_BASE}/api/products?sort=${sortOrder}`);
-      const data = await res.json();
-      setProducts(data);
-    } finally {
-      setLoadingProducts(false);
-    }
-  }
-
-  function handleLogin(user) {
-    setCurrentUser({
-      id: user.userId,
-      role: user.role,
-      email: user.email,
-    });
-    setToken(user.token);
-    localStorage.setItem("token", user.token);
-    localStorage.setItem("user", JSON.stringify(user));
-  }
-
-  function handleLogout() {
+  const clearAuthState = useCallback((message = "") => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setToken("");
     setCurrentUser(null);
+    setActiveProduct(null);
+    setEditTarget(null);
+    setMessages([]);
+    setMessageError("");
+    setOrders([]);
+    setProfile(null);
+    setReviewOrders([]);
+    setOrderFilter("all");
+    if (message) {
+      setStatusMessage(message);
+    }
+  }, []);
+
+  const loadProducts = useCallback(async () => {
+    setLoadingProducts(true);
+    try {
+      const params = new URLSearchParams({ sort: sortOrder });
+      if (activeCategory !== "all") {
+        params.set("category", activeCategory);
+      }
+      if (zipFilter.trim()) {
+        params.set("zipCode", zipFilter.trim());
+      }
+      const res = await fetch(`${API_BASE}/api/products?${params.toString()}`);
+      const data = await res.json();
+      setProducts(Array.isArray(data) ? data : []);
+    } finally {
+      setLoadingProducts(false);
+    }
+  }, [activeCategory, sortOrder, zipFilter]);
+
+  const loadOrders = useCallback(async () => {
+    if (!token || !currentUser) {
+      setOrders([]);
+      return;
+    }
+    setLoadingOrders(true);
+    try {
+      const params = new URLSearchParams();
+      if (orderFilter !== "all") {
+        params.set("status", orderFilter);
+      }
+      const suffix = params.toString() ? `?${params.toString()}` : "";
+      const res = await fetch(`${API_BASE}/api/orders${suffix}`, { headers: authHeaders });
+      if (res.status === 401) {
+        clearAuthState("Your session expired. Please sign in again.");
+        return;
+      }
+      const data = await res.json();
+      setOrders(Array.isArray(data) ? data : []);
+    } finally {
+      setLoadingOrders(false);
+    }
+  }, [authHeaders, clearAuthState, currentUser, orderFilter, token]);
+
+  const loadProfile = useCallback(async () => {
+    if (!token || !currentUser) {
+      setProfile(null);
+      return;
+    }
+    const res = await fetch(`${API_BASE}/api/profile`, { headers: authHeaders });
+    if (res.status === 401) {
+      clearAuthState("Your session expired. Please sign in again.");
+      return;
+    }
+    const data = await res.json();
+    if (res.ok) {
+      setProfile(data);
+      if (currentUser?.role === "buyer" && data.home_zip && !zipFilter) {
+        setZipFilter(data.home_zip);
+      }
+    }
+  }, [authHeaders, clearAuthState, currentUser, token, zipFilter]);
+
+  const loadReviews = useCallback(async () => {
+    const res = await fetch(`${API_BASE}/api/reviews`);
+    const data = await res.json();
+    setReviews(Array.isArray(data) ? data : []);
+  }, []);
+
+  const loadCompletedOrders = useCallback(async () => {
+    if (!token || currentUser?.role !== "buyer") {
+      setReviewOrders([]);
+      return;
+    }
+    const res = await fetch(`${API_BASE}/api/orders?status=completed`, { headers: authHeaders });
+    if (res.status === 401) {
+      clearAuthState("Your session expired. Please sign in again.");
+      return;
+    }
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      const reviewedIds = new Set(reviews.map((review) => review.order_id));
+      setReviewOrders(data.filter((order) => !reviewedIds.has(order.id)));
+    }
+  }, [authHeaders, clearAuthState, currentUser?.role, reviews, token]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
+
+  useEffect(() => {
+    loadOrders();
+    loadProfile();
+  }, [loadOrders, loadProfile]);
+
+  useEffect(() => {
+    loadCompletedOrders();
+  }, [loadCompletedOrders]);
+
+  useEffect(() => {
+    if (!statusMessage) return undefined;
+    const timeout = window.setTimeout(() => setStatusMessage(""), 3200);
+    return () => window.clearTimeout(timeout);
+  }, [statusMessage]);
+
+  function handleLogin(user) {
+    const normalizedUser = normalizeUser(user);
+    if (!normalizedUser) {
+      setStatusMessage("Unable to load that account");
+      return;
+    }
+    setCurrentUser(normalizedUser);
+    setToken(user.token);
+    setActiveCategory("all");
+    setZipFilter("");
+    setSearchTerm("");
+    setFocusKeyword("");
+    setBoostList([]);
+    setOrderFilter("all");
+    localStorage.setItem("token", user.token);
+    localStorage.setItem("user", JSON.stringify(normalizedUser));
+    setAuthPrompt("");
+    setStatusMessage(`Signed in as ${normalizedUser.email}`);
+    navigate("/marketplace");
+  }
+
+  function handleLogout() {
+    clearAuthState("Signed out");
+    setProducts([]);
+    setSortOrder("default");
+    setActiveCategory("all");
+    setZipFilter("");
+    setSearchTerm("");
+    setFocusKeyword("");
+    setBoostList([]);
+    setAuthPrompt("");
+    navigate("/marketplace");
+  }
+
+  async function uploadImageIfNeeded(form) {
+    if (!form.imageFile) {
+      return form.image_url;
+    }
+
+    const data = new FormData();
+    data.append("image", form.imageFile);
+    const res = await fetch(`${API_BASE}/api/uploads`, {
+      method: "POST",
+      headers: authHeaders,
+      body: data,
+    });
+    const payload = await res.json();
+    if (!res.ok) {
+      throw new Error(payload.detail || "Image upload failed");
+    }
+    return `${API_BASE}${payload.imagePath}`;
   }
 
   async function handleCreateProduct(form) {
-    const res = await fetch(`${API_BASE}/api/products`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(form),
-    });
-
-    const result = await res.json();
-    if (!res.ok) {
-      alert(result.message);
-      return;
+    setSavingProduct(true);
+    try {
+      const imageUrl = await uploadImageIfNeeded(form);
+      const res = await fetch(`${API_BASE}/api/products`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
+        },
+        body: JSON.stringify({ ...form, image_url: imageUrl }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        setStatusMessage(result.detail || result.message || "Unable to create product");
+        return;
+      }
+      setStatusMessage("Listing created");
+      await loadProducts();
+    } catch (error) {
+      setStatusMessage(error.message);
+    } finally {
+      setSavingProduct(false);
     }
-
-    loadProducts();
   }
 
   async function handleDeleteProduct(id) {
     if (!window.confirm("Delete this product?")) return;
-
     const res = await fetch(`${API_BASE}/api/products/${id}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
+      headers: authHeaders,
+    });
+    const result = await res.json();
+    if (!res.ok) {
+      setStatusMessage(result.detail || result.message || "Unable to delete product");
+      return;
+    }
+    if (editTarget?.id === id) {
+      setEditTarget(null);
+    }
+    setStatusMessage("Listing removed");
+    await loadProducts();
+  }
+
+  async function handlePurchase(item) {
+    if (!token) {
+      setAuthPrompt("Please sign in as a neighbor to place an order request.");
+      navigate("/auth");
+      return;
+    }
+
+    const quantityInput = window.prompt(
+      `How many ${item.title} would you like to request?`,
+      "1"
+    );
+    if (quantityInput === null) {
+      return;
+    }
+
+    const quantity = Number.parseInt(quantityInput, 10);
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      setStatusMessage("Enter a whole number quantity to place an order");
+      return;
+    }
+
+    const pickupWindow = window.prompt(
+      "Optional pickup window for this order request:",
+      "Saturday 10:00 AM"
+    );
+
+    const res = await fetch(`${API_BASE}/api/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders,
+      },
+      body: JSON.stringify({
+        productId: item.id,
+        quantity,
+        pickupWindow: pickupWindow || "",
+      }),
     });
 
     const result = await res.json();
     if (!res.ok) {
-      alert(result.message);
+      setStatusMessage(result.detail || result.message || "Order request failed");
       return;
     }
 
-    loadProducts();
-  }
-
-  async function handlePurchase(item) {
-    const res = await fetch(`${API_BASE}/api/purchases/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ productId: item.id }),
-    });
-
-    let result = {};
-    try {
-      result = await res.json();
-    } catch (_) {
-      result = { detail: "Request failed" };
-    }
-    if (!res.ok) {
-      alert(result.detail || result.message || "Purchase failed");
-      return;
-    }
-
-    loadProducts();
+    setStatusMessage(`Pending order created for ${quantity} ${item.title}`);
+    await Promise.all([loadProducts(), loadOrders()]);
   }
 
   async function handleOpenMessages(product) {
+    if (!token) {
+      setAuthPrompt("Please sign in to open the product conversation.");
+      navigate("/auth");
+      return;
+    }
+
     setActiveProduct(product);
     setMessages([]);
     setMessageError("");
     setLoadingMessages(true);
-
     try {
-      const res = await fetch(
-        `${API_BASE}/api/messages?productId=${product.id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+      const res = await fetch(`${API_BASE}/api/messages?productId=${product.id}`, {
+        headers: authHeaders,
+      });
       const data = await res.json();
       if (res.ok) {
         setMessages(data);
       } else {
-        setMessageError(data.message);
+        setMessageError(data.detail || data.message || "Unable to load messages");
       }
     } catch {
       setMessageError("Network error");
+    } finally {
+      setLoadingMessages(false);
     }
-
-    setLoadingMessages(false);
   }
 
   async function handleSendMessage(text) {
     if (!activeProduct) return;
-
     try {
       const res = await fetch(`${API_BASE}/api/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          ...authHeaders,
         },
-        body: JSON.stringify({
-          productId: activeProduct.id,
-          content: text,
-        }),
+        body: JSON.stringify({ productId: activeProduct.id, content: text }),
       });
-
       const data = await res.json();
       if (!res.ok) {
-        setMessageError(data.message);
+        setMessageError(data.detail || data.message || "Unable to send message");
         return;
       }
-
-      handleOpenMessages(activeProduct);
+      await handleOpenMessages(activeProduct);
     } catch {
       setMessageError("Network error");
     }
   }
 
-  function handleEditProduct(p) {
-    setEditTarget(p);
+  function handleEditProduct(product) {
+    setEditTarget(product);
+    setStatusMessage(`Editing ${product.title}`);
+    if (location.pathname !== "/marketplace") {
+      navigate("/marketplace");
+    }
   }
 
   async function handleSaveEdit(update) {
+    if (!editTarget) return;
     setSavingEdit(true);
-
     try {
+      const imageUrl = await uploadImageIfNeeded(update);
       const res = await fetch(`${API_BASE}/api/products/${editTarget.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          ...authHeaders,
         },
-        body: JSON.stringify(update),
+        body: JSON.stringify({ ...update, image_url: imageUrl }),
       });
-
       const data = await res.json();
       if (!res.ok) {
-        alert(data.message);
+        setStatusMessage(data.detail || data.message || "Unable to save changes");
       } else {
         setEditTarget(null);
-        loadProducts();
+        setStatusMessage("Listing updated");
+        await loadProducts();
       }
+    } catch (error) {
+      setStatusMessage(error.message);
     } finally {
       setSavingEdit(false);
     }
   }
 
-  async function handleFocusSimilar(p) {
-    try {
-      const res = await fetch(
-        `${API_BASE}/api/products/similar?productId=${p.id}`
-      );
-      const list = await res.json();
+  function handleFocusSimilar(product) {
+    const keywords = `${product.title} ${product.description}`.toLowerCase().split(/\W+/);
+    const matches = products
+      .filter((candidate) => candidate.id !== product.id)
+      .map((candidate) => {
+        const haystack = `${candidate.title} ${candidate.description}`.toLowerCase();
+        const score = keywords.reduce(
+          (total, keyword) => (keyword && haystack.includes(keyword) ? total + 1 : total),
+          0
+        );
+        return { id: candidate.id, score };
+      })
+      .filter((candidate) => candidate.score > 0)
+      .sort((left, right) => right.score - left.score);
 
-      if (Array.isArray(list)) {
-        setBoostList(list.map((t) => t.id));
-        setFocusKeyword(p.title);
+    if (matches.length) {
+      setBoostList(matches.map((match) => match.id));
+      setFocusKeyword(product.title);
+    } else {
+      setStatusMessage("No closely related products were found for that listing");
+    }
+  }
+
+  async function handleOrderStatusChange(orderId, status) {
+    const res = await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders,
+      },
+      body: JSON.stringify({ status }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setStatusMessage(data.detail || data.message || "Unable to update order");
+      return;
+    }
+    setStatusMessage(`Order ${status.replaceAll("_", " ")}`);
+    await Promise.all([loadOrders(), loadProducts(), loadReviews(), loadCompletedOrders()]);
+  }
+
+  async function handleSaveProfile(update) {
+    setSavingProfile(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
+        },
+        body: JSON.stringify(update),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setStatusMessage(data.detail || data.message || "Unable to save profile");
+        return;
       }
-    } catch {}
+      setStatusMessage("Profile updated");
+      if (data?.role) {
+        setProfile(data);
+      } else {
+        await loadProfile();
+      }
+      if (currentUser?.role === "buyer") {
+        setZipFilter(data.home_zip || update.home_zip || "");
+      }
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
+  async function handleSubmitReview(review) {
+    const res = await fetch(`${API_BASE}/api/reviews`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders,
+      },
+      body: JSON.stringify(review),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setStatusMessage(data.detail || data.message || "Unable to submit review");
+      return;
+    }
+    setStatusMessage("Review submitted");
+    await Promise.all([loadReviews(), loadCompletedOrders()]);
   }
 
   function clearBoost() {
@@ -237,97 +529,177 @@ export default function App() {
     setFocusKeyword("");
   }
 
+  function requireAuth(message) {
+    setAuthPrompt(message);
+    navigate("/auth");
+  }
+
+  const filteredProducts = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
+    return products.filter((product) => {
+      const matchesSearch =
+        !search ||
+        `${product.title} ${product.description} ${product.farm_name}`.toLowerCase().includes(search);
+      return matchesSearch;
+    });
+  }, [products, searchTerm]);
+
   const finalProducts = useMemo(() => {
-    if (!boostList.length) return products;
-
-    const map = new Map(products.map((p) => [p.id, p]));
+    if (!boostList.length) return filteredProducts;
+    const map = new Map(filteredProducts.map((product) => [product.id, product]));
     const boosted = boostList.map((id) => map.get(id)).filter(Boolean);
-    const rest = products.filter((p) => !boostList.includes(p.id));
-
+    const rest = filteredProducts.filter((product) => !boostList.includes(product.id));
     return [...boosted, ...rest];
-  }, [products, boostList]);
+  }, [filteredProducts, boostList]);
+
+  const highlightedProducts = useMemo(() => finalProducts.slice(0, 4), [finalProducts]);
+
+  const featuredStats = useMemo(() => {
+    const totalProducts = products.length;
+    const sellerCount = new Set(products.map((product) => product.seller_id)).size;
+    const pendingOrders = orders.filter((order) => order.status === "pending").length;
+    return [
+      { label: "Listings live", value: totalProducts },
+      { label: "Farms represented", value: sellerCount },
+      { label: "Pending orders", value: pendingOrders },
+    ];
+  }, [orders, products]);
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        backgroundImage: "url('/farm.png')",
-        backgroundSize: "cover",
-        padding: "20px",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "960px",
-          margin: "0 auto",
-          backgroundColor: "rgba(255,255,255,0.85)",
-          padding: "20px",
-          borderRadius: "12px",
-        }}
-      >
-        <header
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "20px",
-          }}
-        >
-          <h1>Local Farm Market</h1>
-
-          {currentUser && (
-            <div>
-              {currentUser.email} ({currentUser.role})
-              <button onClick={handleLogout} style={{ marginLeft: "10px" }}>
-                Logout
-              </button>
-            </div>
-          )}
-        </header>
-
-        {!currentUser && (
-          <AuthPanel onLoginSuccess={handleLogin} />
-        )}
-
-        {currentUser && currentUser.role === "seller" && (
-          <CreateProductForm
-            mode={editTarget ? "edit" : "create"}
-            initialData={editTarget}
-            onCreate={handleCreateProduct}
-            onEdit={handleSaveEdit}
-            loading={savingEdit}
-          />
-        )}
-
-        {activeProduct && (
-          <MessagesPanel
-            product={activeProduct}
-            messages={messages}
-            messagesLoading={loadingMessages}
-            messageError={messageError}
-            currentUser={currentUser}
-            onClose={() => setActiveProduct(null)}
-            onSendMessage={handleSendMessage}
-          />
-        )}
-
-        <SortBar
-          sortOrder={sortOrder}
-          onSortChange={(e) => setSortOrder(e.target.value)}
-          focusedKeyword={focusKeyword}
-          onClearKeyword={clearBoost}
+    <AppShell currentUser={currentUser} onLogout={handleLogout} statusMessage={statusMessage}>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <HomePage
+              currentUser={currentUser}
+              highlightedProducts={highlightedProducts}
+              onRequireAuth={requireAuth}
+            />
+          }
         />
-
-        <ProductList
-          products={finalProducts}
-          loading={loadingProducts}
-          currentUser={currentUser}
-          onFocusKeyword={handleFocusSimilar}
-          onDeleteProduct={handleDeleteProduct}
-          onPurchase={handlePurchase}
-          onOpenMessages={handleOpenMessages}
-          onEditProduct={handleEditProduct}
+        <Route
+          path="/auth"
+          element={
+            <section className="auth-route">
+              <div className="auth-route__intro">
+                <p className="eyebrow">Sign In To Your Harvest Hub</p>
+                <h1>Join the local marketplace built for neighbors and farmers.</h1>
+                <p>
+                  Buyers can track order status through pickup. Sellers can manage inventory,
+                  incoming requests, profiles, and trust signals from the same SPA.
+                </p>
+              </div>
+              <AuthPanel
+                prompt={authPrompt}
+                onLoginSuccess={handleLogin}
+                onDismissPrompt={() => setAuthPrompt("")}
+              />
+            </section>
+          }
         />
-      </div>
-    </main>
+        <Route
+          path="/marketplace"
+          element={
+            <MarketplacePage
+              currentUser={currentUser}
+              editTarget={editTarget}
+              featuredStats={featuredStats}
+              focusKeyword={focusKeyword}
+              loadingProducts={loadingProducts}
+              onClearBoost={clearBoost}
+              onCreateProduct={handleCreateProduct}
+              onDeleteProduct={handleDeleteProduct}
+              onEditProduct={handleEditProduct}
+              onFocusKeyword={handleFocusSimilar}
+              onOpenMessages={handleOpenMessages}
+              onPurchase={handlePurchase}
+              onRequireAuth={requireAuth}
+              onSaveEdit={handleSaveEdit}
+              onSearchChange={setSearchTerm}
+              onSetCategory={setActiveCategory}
+              onSetSortOrder={setSortOrder}
+              onSetZipFilter={setZipFilter}
+              products={finalProducts}
+              savingEdit={savingEdit}
+              savingProduct={savingProduct}
+              searchTerm={searchTerm}
+              selectedCategory={activeCategory}
+              sortOrder={sortOrder}
+              zipFilter={zipFilter}
+            />
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            currentUser ? (
+              <OrdersPage
+                currentUser={currentUser}
+                orders={orders}
+                loading={loadingOrders}
+                statusFilter={orderFilter}
+                onFilterChange={setOrderFilter}
+                onStatusChange={handleOrderStatusChange}
+              />
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            currentUser ? (
+              <ProfilePage
+                key={`${currentUser.id}-${currentUser.role}-${JSON.stringify(profile ?? {})}`}
+                currentUser={currentUser}
+                profile={profile}
+                onSaveProfile={handleSaveProfile}
+                loading={savingProfile}
+              />
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          }
+        />
+        <Route
+          path="/community"
+          element={
+            <CommunityPage
+              currentUser={currentUser}
+              onRequireAuth={requireAuth}
+              reviews={reviews}
+              reviewOrders={reviewOrders}
+              onSubmitReview={handleSubmitReview}
+            />
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      <MessagesPanel
+        product={activeProduct}
+        messages={messages}
+        messagesLoading={loadingMessages}
+        messageError={messageError}
+        currentUser={currentUser}
+        onClose={() => setActiveProduct(null)}
+        onSendMessage={handleSendMessage}
+      />
+    </AppShell>
   );
+}
+
+function normalizeUser(user) {
+  const id = user?.id ?? user?.userId;
+  if (!id || !user?.role || !user?.email) {
+    return null;
+  }
+
+  return {
+    id,
+    role: user.role,
+    email: user.email,
+  };
 }
