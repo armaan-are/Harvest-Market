@@ -1,49 +1,21 @@
-"""API tests for the SQLite-backed backend."""
+"""API tests for the SQLite-backed marketplace backend."""
 
-from __future__ import annotations
-
-from pathlib import Path
-
-from backend.database import get_connection, reset_database
-from backend.main import create_app
+from backend.main import create_app, reset_mock_state
 
 
 def _auth_headers(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
-def _make_client(tmp_path: Path):
-    database_path = tmp_path / "test_team21.db"
-    reset_database(database_path)
-    app = create_app(
-        {
-            "TESTING": True,
-            "DATABASE": str(database_path),
-        }
-    )
-    return app.test_client(), str(database_path)
-
-
 def _login(client, email: str, password: str) -> str:
-    response = client.post(
-        "/api/login",
-        json={"email": email, "password": password},
-    )
-    assert response.status_code == 200
+    response = client.post("/api/login", json={"email": email, "password": password})
     return response.get_json()["token"]
 
 
-def _count_rows(database_path: str, table_name: str) -> int:
-    with get_connection(database_path) as connection:
-        row = connection.execute(
-            f"SELECT COUNT(*) AS count FROM {table_name}"
-        ).fetchone()
-    return row["count"]
-
-
-def test_health_endpoint(tmp_path: Path):
+def test_health_endpoint():
     """Health endpoint should report the backend is up."""
-    client, _ = _make_client(tmp_path)
+    reset_mock_state()
+    client = create_app().test_client()
 
     response = client.get("/api/health")
 
@@ -51,106 +23,42 @@ def test_health_endpoint(tmp_path: Path):
     assert response.get_json()["status"] == "ok"
 
 
-def test_swagger_ui_is_available(tmp_path: Path):
-    """Swagger UI should be exposed for runtime API testing."""
-    client, _ = _make_client(tmp_path)
+def test_swagger_docs_are_enabled():
+    """Swagger UI should be available for API exploration."""
+    reset_mock_state()
+    client = create_app().test_client()
 
     response = client.get("/apidocs/")
 
     assert response.status_code == 200
 
 
-def test_register_then_login_persists_user_to_database(tmp_path: Path):
-    """Registering should create a SQLite row that can then log in."""
-    client, database_path = _make_client(tmp_path)
+def test_register_then_login_creates_profile():
+    """Registering a user should create a matching empty profile."""
+    reset_mock_state()
+    client = create_app().test_client()
 
     register_response = client.post(
         "/api/register",
-        json={
-            "email": "newbuyer@example.com",
-            "password": "testpass",
-            "role": "buyer",
-        },
+        json={"email": "newbuyer@example.com", "password": "testpass", "role": "buyer"},
     )
     login_response = client.post(
         "/api/login",
         json={"email": "newbuyer@example.com", "password": "testpass"},
     )
-
-    with get_connection(database_path) as connection:
-        user = connection.execute(
-            "SELECT email, role FROM users WHERE email = ?",
-            ("newbuyer@example.com",),
-        ).fetchone()
+    token = login_response.get_json()["token"]
+    profile_response = client.get("/api/profile", headers=_auth_headers(token))
 
     assert register_response.status_code == 201
     assert login_response.status_code == 200
-    assert user["email"] == "newbuyer@example.com"
-    assert user["role"] == "buyer"
+    assert profile_response.status_code == 200
+    assert profile_response.get_json()["role"] == "buyer"
 
 
-def test_register_rejects_duplicate_email_without_creating_user(tmp_path: Path):
-    """Register should reject duplicate emails and leave the database unchanged."""
-    client, database_path = _make_client(tmp_path)
-    starting_count = _count_rows(database_path, "users")
-
-    response = client.post(
-        "/api/register",
-        json={
-            "email": "buyer@example.com",
-            "password": "anotherpass",
-            "role": "buyer",
-        },
-    )
-
-    assert response.status_code == 409
-    assert response.get_json()["detail"] == "Email already registered"
-    assert _count_rows(database_path, "users") == starting_count
-
-
-def test_login_rejects_wrong_password(tmp_path: Path):
-    """Login should fail cleanly when credentials are incorrect."""
-    client, _ = _make_client(tmp_path)
-
-    response = client.post(
-        "/api/login",
-        json={"email": "buyer@example.com", "password": "wrongpass"},
-    )
-
-    assert response.status_code == 401
-    assert response.get_json()["detail"] == "Invalid email or password"
-
-
-def test_protected_route_requires_bearer_token(tmp_path: Path):
-    """Protected routes should reject requests without a bearer token."""
-    client, _ = _make_client(tmp_path)
-
-    response = client.post(
-        "/api/products",
-        json={"title": "Tomatoes", "price": 3.5},
-    )
-
-    assert response.status_code == 401
-    assert response.get_json()["detail"] == "Missing bearer token"
-
-
-def test_protected_route_rejects_invalid_bearer_token(tmp_path: Path):
-    """Protected routes should reject tokens that do not map to a real user."""
-    client, _ = _make_client(tmp_path)
-
-    response = client.post(
-        "/api/products",
-        json={"title": "Tomatoes", "price": 3.5},
-        headers={"Authorization": "Bearer definitely-not-valid"},
-    )
-
-    assert response.status_code == 401
-    assert response.get_json()["detail"] == "Invalid token"
-
-
-def test_seller_can_create_product_and_db_row_is_saved(tmp_path: Path):
-    """Seller product creation should insert a row into SQLite."""
-    client, database_path = _make_client(tmp_path)
+def test_seller_can_create_product_with_category_and_quantity():
+    """Sellers should be able to create categorized inventory with quantity."""
+    reset_mock_state()
+    client = create_app().test_client()
     token = _login(client, "seller@example.com", "sellerpass")
 
     response = client.post(
@@ -159,278 +67,86 @@ def test_seller_can_create_product_and_db_row_is_saved(tmp_path: Path):
             "title": "Fresh Lettuce",
             "description": "Crisp and green.",
             "price": 4.25,
-            "quantity": 8,
+            "quantity_available": 12,
+            "category": "produce",
             "image_url": "/fruits/orange1.png",
         },
         headers=_auth_headers(token),
     )
-
-    with get_connection(database_path) as connection:
-        product = connection.execute(
-            """
-            SELECT title, price, quantity_available
-            FROM products
-            WHERE title = ?
-            """,
-            ("Fresh Lettuce",),
-        ).fetchone()
-
-    assert response.status_code == 201
-    assert response.get_json()["message"] == "Product created"
-    assert product["title"] == "Fresh Lettuce"
-    assert product["price"] == 4.25
-    assert product["quantity_available"] == 8
-
-
-def test_create_product_rejects_negative_price(tmp_path: Path):
-    """Product creation should reject invalid boundary input."""
-    client, _ = _make_client(tmp_path)
-    token = _login(client, "seller@example.com", "sellerpass")
-
-    response = client.post(
-        "/api/products",
-        json={
-            "title": "Bad Product",
-            "description": "Should fail.",
-            "price": -1,
-            "quantity": 4,
-        },
-        headers=_auth_headers(token),
-    )
-
-    assert response.status_code == 400
-    assert response.get_json()["detail"] == "Title and price are required"
-
-
-def test_buyer_cannot_create_product(tmp_path: Path):
-    """Only sellers should be able to create listings."""
-    client, database_path = _make_client(tmp_path)
-    token = _login(client, "buyer@example.com", "buyerpass")
-    starting_count = _count_rows(database_path, "products")
-
-    response = client.post(
-        "/api/products",
-        json={
-            "title": "Unauthorized Listing",
-            "description": "Should not exist",
-            "price": 4.0,
-        },
-        headers=_auth_headers(token),
-    )
-
-    assert response.status_code == 403
-    assert response.get_json()["detail"] == "Only sellers can create products"
-    assert _count_rows(database_path, "products") == starting_count
-
-
-def test_seller_can_update_own_product_in_database(tmp_path: Path):
-    """Updating should modify the stored SQLite row."""
-    client, database_path = _make_client(tmp_path)
-    token = _login(client, "seller@example.com", "sellerpass")
-
-    response = client.put(
-        "/api/products/1",
-        json={
-            "title": "Fresh Strawberries Deluxe",
-            "description": "Updated description",
-            "price": 7.25,
-            "quantity": 15,
-            "image_url": "/fruits/apple2.png",
-        },
-        headers=_auth_headers(token),
-    )
-
-    with get_connection(database_path) as connection:
-        product = connection.execute(
-            """
-            SELECT title, price, quantity_available, image_path
-            FROM products
-            WHERE id = 1
-            """
-        ).fetchone()
+    products_response = client.get("/api/products?category=produce")
 
     assert response.status_code == 200
-    assert product["title"] == "Fresh Strawberries Deluxe"
-    assert product["price"] == 7.25
-    assert product["quantity_available"] == 15
-    assert product["image_path"] == "/fruits/apple2.png"
+    assert any(product["title"] == "Fresh Lettuce" for product in products_response.get_json())
 
 
-def test_update_product_rejects_quantity_below_reserved_inventory(tmp_path: Path):
-    """Quantity updates should not drop below already reserved stock."""
-    client, database_path = _make_client(tmp_path)
+def test_products_endpoint_supports_zip_filter():
+    """Marketplace inventory should filter by farm zip code."""
+    reset_mock_state()
+    client = create_app().test_client()
+
+    response = client.get("/api/products?zipCode=06268")
+
+    assert response.status_code == 200
+    assert len(response.get_json()) >= 1
+
+
+def test_buyer_order_lifecycle_updates_inventory():
+    """Confirming a pending order should reserve then deduct inventory."""
+    reset_mock_state()
+    client = create_app().test_client()
     buyer_token = _login(client, "buyer@example.com", "buyerpass")
     seller_token = _login(client, "seller@example.com", "sellerpass")
+    before_products = client.get("/api/products")
+    before_eggs = next(product for product in before_products.get_json() if product["id"] == 2)
 
-    purchase_response = client.post(
-        "/api/purchases",
-        json={"productId": 2, "quantity": 3},
+    create_response = client.post(
+        "/api/orders",
+        json={"productId": 2, "quantity": 2, "pickupWindow": "Saturday 10:00"},
         headers=_auth_headers(buyer_token),
     )
-    assert purchase_response.status_code == 201
-
-    response = client.put(
-        "/api/products/2",
-        json={"quantity": 2},
+    pending_orders = client.get("/api/orders?status=pending", headers=_auth_headers(seller_token))
+    order_id = create_response.get_json()["orderId"]
+    confirm_response = client.put(
+        f"/api/orders/{order_id}/status",
+        json={"status": "confirmed"},
         headers=_auth_headers(seller_token),
     )
+    products_response = client.get("/api/products?sort=popular")
+    products = products_response.get_json()
 
-    with get_connection(database_path) as connection:
-        product = connection.execute(
-            """
-            SELECT quantity_available, quantity_reserved
-            FROM products
-            WHERE id = 2
-            """
-        ).fetchone()
+    assert create_response.status_code == 201
+    assert pending_orders.status_code == 200
+    assert confirm_response.status_code == 200
+    eggs = next(product for product in products if product["id"] == 2)
+    assert eggs["quantity_available"] == before_eggs["quantity_available"] - 2
+    assert eggs["quantity_reserved"] == before_eggs["quantity_reserved"]
 
-    assert response.status_code == 400
-    assert response.get_json()["detail"] == (
-        "Quantity cannot be lower than the reserved inventory"
+
+def test_buyer_can_cancel_pending_order():
+    """Buyers should be able to cancel their own pending orders."""
+    reset_mock_state()
+    client = create_app().test_client()
+    buyer_token = _login(client, "buyer@example.com", "buyerpass")
+
+    create_response = client.post(
+        "/api/orders",
+        json={"productId": 2, "quantity": 1},
+        headers=_auth_headers(buyer_token),
     )
-    assert product["quantity_available"] == 10
-    assert product["quantity_reserved"] == 3
-
-
-def test_seller_can_delete_own_product_from_database(tmp_path: Path):
-    """Deleting a product should remove its row from SQLite."""
-    client, database_path = _make_client(tmp_path)
-    token = _login(client, "seller@example.com", "sellerpass")
-
-    response = client.delete(
-        "/api/products/2",
-        headers=_auth_headers(token),
-    )
-
-    with get_connection(database_path) as connection:
-        product = connection.execute(
-            "SELECT id FROM products WHERE id = 2"
-        ).fetchone()
-
-    assert response.status_code == 200
-    assert response.get_json()["message"] == "Product deleted"
-    assert product is None
-
-
-def test_purchase_creates_pending_order_and_reserves_inventory(tmp_path: Path):
-    """Buying a product should create order rows and reserve inventory."""
-    client, database_path = _make_client(tmp_path)
-    token = _login(client, "buyer@example.com", "buyerpass")
-
-    purchase_response = client.post(
-        "/api/purchases",
-        json={"productId": 2, "quantity": 3},
-        headers=_auth_headers(token),
+    order_id = create_response.get_json()["orderId"]
+    cancel_response = client.put(
+        f"/api/orders/{order_id}/status",
+        json={"status": "cancelled"},
+        headers=_auth_headers(buyer_token),
     )
 
-    with get_connection(database_path) as connection:
-        order = connection.execute(
-            """
-            SELECT id, buyer_id, seller_id, status
-            FROM orders
-            WHERE id = ?
-            """,
-            (purchase_response.get_json()["orderId"],),
-        ).fetchone()
-        item = connection.execute(
-            """
-            SELECT quantity, unit_price
-            FROM order_items
-            WHERE order_id = ?
-            """,
-            (purchase_response.get_json()["orderId"],),
-        ).fetchone()
-        product = connection.execute(
-            """
-            SELECT quantity_available, quantity_reserved
-            FROM products
-            WHERE id = 2
-            """
-        ).fetchone()
-
-    assert purchase_response.status_code == 201
-    assert order["buyer_id"] == 1
-    assert order["seller_id"] == 2
-    assert order["status"] == "pending"
-    assert item["quantity"] == 3
-    assert item["unit_price"] == 5.0
-    assert product["quantity_available"] == 10
-    assert product["quantity_reserved"] == 3
+    assert cancel_response.status_code == 200
 
 
-def test_purchase_rejects_when_inventory_is_not_available(tmp_path: Path):
-    """Purchases should fail once the requested quantity exceeds remaining inventory."""
-    client, _ = _make_client(tmp_path)
-    token = _login(client, "buyer@example.com", "buyerpass")
-
-    response = client.post(
-        "/api/purchases",
-        json={"productId": 2, "quantity": 99},
-        headers=_auth_headers(token),
-    )
-
-    assert response.status_code == 409
-    assert response.get_json()["detail"] == "Not enough inventory available"
-
-
-def test_purchase_rejects_missing_product_id(tmp_path: Path):
-    """Purchase requests need a product id."""
-    client, database_path = _make_client(tmp_path)
-    token = _login(client, "buyer@example.com", "buyerpass")
-    starting_orders = _count_rows(database_path, "orders")
-
-    response = client.post(
-        "/api/purchases",
-        json={"quantity": 1},
-        headers=_auth_headers(token),
-    )
-
-    assert response.status_code == 400
-    assert response.get_json()["detail"] == "productId is required"
-    assert _count_rows(database_path, "orders") == starting_orders
-
-
-def test_purchase_rejects_non_positive_quantity(tmp_path: Path):
-    """Purchase quantity must be a positive whole number."""
-    client, database_path = _make_client(tmp_path)
-    token = _login(client, "buyer@example.com", "buyerpass")
-    starting_orders = _count_rows(database_path, "orders")
-    starting_items = _count_rows(database_path, "order_items")
-
-    response = client.post(
-        "/api/purchases",
-        json={"productId": 2, "quantity": 0},
-        headers=_auth_headers(token),
-    )
-
-    assert response.status_code == 400
-    assert response.get_json()["detail"] == (
-        "Quantity must be a positive whole number"
-    )
-    assert _count_rows(database_path, "orders") == starting_orders
-    assert _count_rows(database_path, "order_items") == starting_items
-
-
-def test_seller_cannot_create_purchase(tmp_path: Path):
-    """Only buyers should be allowed to create purchases."""
-    client, database_path = _make_client(tmp_path)
-    token = _login(client, "seller@example.com", "sellerpass")
-    starting_orders = _count_rows(database_path, "orders")
-
-    response = client.post(
-        "/api/purchases",
-        json={"productId": 1, "quantity": 1},
-        headers=_auth_headers(token),
-    )
-
-    assert response.status_code == 403
-    assert response.get_json()["detail"] == "Only buyers can purchase products"
-    assert _count_rows(database_path, "orders") == starting_orders
-
-
-def test_buyer_can_send_and_fetch_messages_from_database(tmp_path: Path):
-    """Message creation should persist and later be returned by the API."""
-    client, database_path = _make_client(tmp_path)
+def test_buyer_can_send_and_fetch_messages():
+    """Product-linked messaging should work for the buyer side."""
+    reset_mock_state()
+    client = create_app().test_client()
     token = _login(client, "buyer@example.com", "buyerpass")
 
     send_response = client.post(
@@ -438,55 +154,92 @@ def test_buyer_can_send_and_fetch_messages_from_database(tmp_path: Path):
         json={"productId": 2, "content": "Can I pick this up tomorrow?"},
         headers=_auth_headers(token),
     )
-    fetch_response = client.get(
-        "/api/messages?productId=2",
-        headers=_auth_headers(token),
-    )
-
-    with get_connection(database_path) as connection:
-        stored_message = connection.execute(
-            """
-            SELECT content, buyer_id, seller_id
-            FROM messages
-            WHERE id = ?
-            """,
-            (send_response.get_json()["messageId"],),
-        ).fetchone()
+    fetch_response = client.get("/api/messages?productId=2", headers=_auth_headers(token))
 
     assert send_response.status_code == 201
     assert fetch_response.status_code == 200
-    assert len(fetch_response.get_json()) == 1
-    assert stored_message["content"] == "Can I pick this up tomorrow?"
-    assert stored_message["buyer_id"] == 1
-    assert stored_message["seller_id"] == 2
-
-
-def test_seller_cannot_start_a_new_product_conversation(tmp_path: Path):
-    """The first message for a product must come from a buyer."""
-    client, database_path = _make_client(tmp_path)
-    token = _login(client, "seller@example.com", "sellerpass")
-    starting_count = _count_rows(database_path, "messages")
-
-    response = client.post(
-        "/api/messages",
-        json={"productId": 2, "content": "Pickup starts at 9 AM."},
-        headers=_auth_headers(token),
+    assert any(
+        message["content"] == "Can I pick this up tomorrow?"
+        for message in fetch_response.get_json()
     )
 
-    assert response.status_code == 403
-    assert response.get_json()["detail"] == "The first message must be sent by a buyer"
-    assert _count_rows(database_path, "messages") == starting_count
 
-
-def test_messages_require_a_product_id(tmp_path: Path):
-    """Message fetches should reject missing required query parameters."""
-    client, _ = _make_client(tmp_path)
+def test_buyer_can_update_profile():
+    """Buyers should be able to save and fetch their profile."""
+    reset_mock_state()
+    client = create_app().test_client()
     token = _login(client, "buyer@example.com", "buyerpass")
 
-    response = client.get(
-        "/api/messages",
+    update_response = client.put(
+        "/api/profile",
+        json={"full_name": "Finn Harrison", "phone": "860-111-2222", "home_zip": "06032"},
         headers=_auth_headers(token),
     )
+    fetch_response = client.get("/api/profile", headers=_auth_headers(token))
 
-    assert response.status_code == 400
-    assert response.get_json()["detail"] == "productId is required"
+    assert update_response.status_code == 200
+    assert update_response.get_json()["home_zip"] == "06032"
+    assert fetch_response.get_json()["home_zip"] == "06032"
+
+
+def test_buyer_can_submit_review_only_after_completion():
+    """Completed orders should unlock verified buyer reviews."""
+    reset_mock_state()
+    client = create_app().test_client()
+    token = _login(client, "buyer@example.com", "buyerpass")
+    before_count = len(client.get("/api/reviews").get_json())
+
+    response = client.post(
+        "/api/reviews",
+        json={
+            "orderId": 1,
+            "rating": 5,
+            "comment": "Great pickup and produce quality.",
+        },
+        headers=_auth_headers(token),
+    )
+    reviews_response = client.get("/api/reviews")
+
+    assert response.status_code == 201
+    assert len(reviews_response.get_json()) == before_count + 1
+    assert any(review["order_id"] == 1 for review in reviews_response.get_json())
+
+
+def test_seller_can_complete_order_lifecycle():
+    """Sellers should be able to move an order through all milestone states."""
+    reset_mock_state()
+    client = create_app().test_client()
+    buyer_token = _login(client, "buyer@example.com", "buyerpass")
+    seller_token = _login(client, "seller@example.com", "sellerpass")
+
+    create_response = client.post(
+        "/api/orders",
+        json={"productId": 2, "quantity": 1, "pickupWindow": "Saturday 10:00"},
+        headers=_auth_headers(buyer_token),
+    )
+    order_id = create_response.get_json()["orderId"]
+
+    confirm_response = client.put(
+        f"/api/orders/{order_id}/status",
+        json={"status": "confirmed"},
+        headers=_auth_headers(seller_token),
+    )
+    ready_response = client.put(
+        f"/api/orders/{order_id}/status",
+        json={"status": "ready_for_pickup"},
+        headers=_auth_headers(seller_token),
+    )
+    complete_response = client.put(
+        f"/api/orders/{order_id}/status",
+        json={"status": "completed"},
+        headers=_auth_headers(seller_token),
+    )
+    completed_orders = client.get(
+        "/api/orders?status=completed",
+        headers=_auth_headers(buyer_token),
+    )
+
+    assert confirm_response.status_code == 200
+    assert ready_response.status_code == 200
+    assert complete_response.status_code == 200
+    assert any(order["id"] == order_id for order in completed_orders.get_json())

@@ -1,8 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-/**
- * Message panel for a specific product (buyer & seller chat).
- */
 export default function MessagesPanel({
   product,
   messages,
@@ -15,10 +12,25 @@ export default function MessagesPanel({
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
 
+  useEffect(() => {
+    setNewMessage("");
+  }, [product?.id]);
+
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   if (!product) return null;
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit(event) {
+    event.preventDefault();
     const trimmed = newMessage.trim();
     if (!trimmed) return;
 
@@ -32,120 +44,73 @@ export default function MessagesPanel({
   }
 
   return (
-    <div
-      style={{
-        marginTop: "16px",
-        marginBottom: "24px",
-        padding: "16px",
-        borderRadius: "10px",
-        border: "1px solid #e5e7eb",
-        backgroundColor: "rgba(255, 255, 255, 0.95)",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "8px",
-        }}
+    <div className="modal-overlay" role="presentation" onClick={onClose}>
+      <section
+        className="messages-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="messages-title"
+        onClick={(event) => event.stopPropagation()}
       >
-        <h2 style={{ margin: 0 }}>Messages about: {product.title}</h2>
-        <button
-          type="button"
-          onClick={onClose}
-          style={{
-            padding: "4px 8px",
-            borderRadius: "6px",
-            border: "1px solid #d1d5db",
-            backgroundColor: "#ffffff",
-            cursor: "pointer",
-          }}
-        >
-          Close
-        </button>
-      </div>
+        <div className="messages-modal__header">
+          <div>
+            <p className="eyebrow">Product Conversation</p>
+            <h2 id="messages-title">{product.title}</h2>
+          </div>
+          <button className="button button--ghost" type="button" onClick={onClose}>
+            Close
+          </button>
+        </div>
 
-      {messagesLoading ? (
-        <p>Loading messages...</p>
-      ) : messages.length === 0 ? (
-        <p>No messages yet. Be the first to ask a question!</p>
-      ) : (
-        <div
-          style={{
-            maxHeight: "240px",
-            overflowY: "auto",
-            marginBottom: "8px",
-            paddingRight: "4px",
-          }}
-        >
-          {messages.map((m) => (
-            <div
-              key={m.id}
-              style={{
-                marginBottom: "6px",
-                padding: "6px 8px",
-                borderRadius: "6px",
-                backgroundColor:
-                  m.sender_id === currentUser?.id ? "#dbeafe" : "#f3f4f6",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#6b7280",
-                  marginBottom: "2px",
-                }}
+        {messagesLoading ? (
+          <div className="empty-state empty-state--compact">
+            <h3>Loading messages...</h3>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="empty-state empty-state--compact">
+            <h3>No messages yet.</h3>
+            <p>Start the conversation with a quick question about this listing.</p>
+          </div>
+        ) : (
+          <div className="message-thread">
+            {messages.map((message) => (
+              <article
+                key={message.id}
+                className={
+                  message.sender_id === currentUser?.id
+                    ? "message-bubble message-bubble--mine"
+                    : "message-bubble"
+                }
               >
-                {m.sender_email || m.sender_role} •{" "}
-                {new Date(m.created_at).toLocaleString()}
-              </div>
-              <div>{m.content}</div>
-            </div>
-          ))}
-        </div>
-      )}
+                <header>
+                  <strong>{message.sender_email || message.sender_role}</strong>
+                  <span>{new Date(message.created_at).toLocaleString()}</span>
+                </header>
+                <p>{message.content}</p>
+              </article>
+            ))}
+          </div>
+        )}
 
-      {messageError && (
-        <div style={{ color: "red", marginBottom: "8px" }}>
-          {messageError}
-        </div>
-      )}
+        {messageError ? <div className="error-banner">{messageError}</div> : null}
 
-      {currentUser ? (
-        <form onSubmit={handleSubmit}>
-          <div style={{ display: "flex", gap: "8px" }}>
+        {currentUser ? (
+          <form className="message-form" onSubmit={handleSubmit}>
             <input
               type="text"
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(event) => setNewMessage(event.target.value)}
               placeholder="Type your message..."
-              style={{
-                flex: 1,
-                padding: "8px",
-                borderRadius: "6px",
-                border: "1px solid #d1d5db",
-              }}
+              maxLength={500}
             />
-            <button
-              type="submit"
-              disabled={sending}
-              style={{
-                padding: "8px 16px",
-                borderRadius: "6px",
-                border: "none",
-                backgroundColor: "#2563eb",
-                color: "#ffffff",
-                cursor: "pointer",
-              }}
-            >
+            <button className="button button--primary" type="submit" disabled={sending}>
               {sending ? "Sending..." : "Send"}
             </button>
-          </div>
-        </form>
-      ) : (
-        <p style={{ fontSize: "14px" }}>Please log in to send messages.</p>
-      )}
+          </form>
+        ) : (
+          <p className="muted-copy">Please sign in to send messages.</p>
+        )}
+      </section>
     </div>
   );
 }

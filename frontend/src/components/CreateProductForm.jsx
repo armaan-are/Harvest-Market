@@ -1,150 +1,163 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function CreateProductForm({
-  mode = "create",            // "create" | "edit"
-  initialData = null,         // { title, description, price, image_url }
+  mode = "create",
+  initialData = null,
   onCreate,
   onEdit,
   loading = false,
 }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const defaults = getDefaults(mode, initialData);
+  const [title, setTitle] = useState(defaults.title);
+  const [description, setDescription] = useState(defaults.description);
+  const [price, setPrice] = useState(defaults.price);
+  const [quantityAvailable, setQuantityAvailable] = useState(defaults.quantityAvailable);
+  const [imageUrl, setImageUrl] = useState(defaults.imageUrl);
+  const [category, setCategory] = useState(defaults.category);
+  const [imageFile, setImageFile] = useState(null);
 
-  // When editing, fill the form with initialData
-  useEffect(() => {
-    if (mode === "edit" && initialData) {
-      setTitle(initialData.title);
-      setDescription(initialData.description);
-      setPrice(initialData.price);
-      setImageUrl(initialData.image_url || "");
-    }
-  }, [mode, initialData]);
-
-  function handleSubmit(e) {
-    e.preventDefault();
+  function handleSubmit(event) {
+    event.preventDefault();
 
     const formData = {
       title,
       description,
-      price: parseFloat(price),
+      price: Number.parseFloat(price),
+      quantity_available: Number.parseInt(quantityAvailable, 10),
       image_url: imageUrl,
+      category,
+      imageFile,
     };
 
     if (mode === "edit") {
       onEdit(formData);
     } else {
       onCreate(formData);
+      setTitle("");
+      setDescription("");
+      setPrice("");
+      setQuantityAvailable("1");
+      setImageUrl("");
+      setCategory("produce");
+      setImageFile(null);
     }
   }
 
   return (
-    <div
-      style={{
-        padding: "16px",
-        borderRadius: "10px",
-        border: "1px solid #e5e7eb",
-        marginBottom: "24px",
-        backgroundColor: "rgba(255, 255, 255, 0.95)",
-      }}
-    >
-      <h2 style={{ marginBottom: "8px" }}>
-        {mode === "edit" ? "Edit Product" : "Create Product (Seller Only)"}
-      </h2>
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "8px" }}>
-          <label>
-            Title:
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              style={{
-                marginLeft: "8px",
-                padding: "6px",
-                borderRadius: "4px",
-                border: "1px solid #d1d5db",
-                minWidth: "260px",
-              }}
-            />
-          </label>
+    <section className="seller-panel">
+      <div className="section-heading section-heading--inline">
+        <div>
+          <p className="eyebrow">Seller Studio</p>
+          <h2>{mode === "edit" ? "Update your listing" : "Publish a fresh listing"}</h2>
         </div>
+      </div>
 
-        <div style={{ marginBottom: "8px" }}>
-          <label>
-            Description:
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              style={{
-                marginLeft: "8px",
-                padding: "6px",
-                borderRadius: "4px",
-                border: "1px solid #d1d5db",
-                minWidth: "260px",
-              }}
-            />
-          </label>
-        </div>
+      <form className="seller-form" onSubmit={handleSubmit}>
+        <label>
+          Product title
+          <input
+            type="text"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            required
+            placeholder="Heirloom tomatoes"
+          />
+        </label>
 
-        <div style={{ marginBottom: "8px" }}>
+        <label>
+          Description
+          <textarea
+            rows="3"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            placeholder="Share what makes this item special."
+          />
+        </label>
+
+        <div className="seller-form__row">
           <label>
-            Price:
+            Price
             <input
               type="number"
               step="0.01"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={(event) => setPrice(event.target.value)}
               required
-              style={{
-                marginLeft: "8px",
-                padding: "6px",
-                borderRadius: "4px",
-                border: "1px solid #d1d5db",
-                minWidth: "120px",
-              }}
+              placeholder="7.50"
+            />
+          </label>
+
+          <label>
+            Quantity
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={quantityAvailable}
+              onChange={(event) => setQuantityAvailable(event.target.value)}
+              required
+              placeholder="10"
             />
           </label>
         </div>
 
-        <div style={{ marginBottom: "8px" }}>
+        <div className="seller-form__row">
           <label>
-            Image URL:
+            Category
+            <select value={category} onChange={(event) => setCategory(event.target.value)}>
+              <option value="produce">Produce</option>
+              <option value="dairy">Dairy</option>
+              <option value="meat">Meat</option>
+              <option value="baked_goods">Baked Goods</option>
+            </select>
+          </label>
+
+          <label>
+            Image URL
             <input
               type="text"
               value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+              onChange={(event) => setImageUrl(event.target.value)}
               placeholder="/fruits/apple1.png"
-              style={{
-                marginLeft: "8px",
-                padding: "6px",
-                borderRadius: "4px",
-                border: "1px solid #d1d5db",
-                minWidth: "260px",
-              }}
             />
           </label>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: "8px 16px",
-            borderRadius: "6px",
-            border: "none",
-            backgroundColor: mode === "edit" ? "#3b82f6" : "#10b981",
-            color: "#ffffff",
-            cursor: "pointer",
-          }}
-        >
+        <label>
+          Upload image file
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(event) => setImageFile(event.target.files?.[0] || null)}
+          />
+        </label>
+
+        <button className="button button--primary" type="submit" disabled={loading}>
           {loading ? "Saving..." : mode === "edit" ? "Save Changes" : "Create Product"}
         </button>
       </form>
-    </div>
+    </section>
   );
+}
+
+function getDefaults(mode, initialData) {
+  if (mode === "edit" && initialData) {
+    return {
+      title: initialData.title,
+      description: initialData.description,
+      price: String(initialData.price),
+      quantityAvailable: String(initialData.quantity_available ?? 1),
+      imageUrl: initialData.image_url || "",
+      category: initialData.category || "produce",
+    };
+  }
+
+  return {
+    title: "",
+    description: "",
+    price: "",
+    quantityAvailable: "1",
+    imageUrl: "",
+    category: "produce",
+  };
 }

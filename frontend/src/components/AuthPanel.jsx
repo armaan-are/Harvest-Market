@@ -1,29 +1,24 @@
 import { useState } from "react";
 import { API_BASE } from "../api";
 
-/**
- * Handles login / registration and returns user data to the parent on success.
- */
-export default function AuthPanel({ onLoginSuccess }) {
-  const [mode, setMode] = useState("login"); // "login" | "register"
+export default function AuthPanel({ onLoginSuccess, prompt, onDismissPrompt }) {
+  const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("buyer");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit(event) {
+    event.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
       const endpoint = mode === "login" ? "login" : "register";
-
-      const body =
-        mode === "login"
-          ? { email, password }
-          : { email, password, role };
+      const body = mode === "login" ? { email, password } : { email, password, role };
 
       const res = await fetch(`${API_BASE}/api/${endpoint}`, {
         method: "POST",
@@ -34,7 +29,7 @@ export default function AuthPanel({ onLoginSuccess }) {
       let data = {};
       try {
         data = await res.json();
-      } catch (_) {
+      } catch {
         data = { detail: res.statusText || "Server error" };
       }
 
@@ -44,10 +39,9 @@ export default function AuthPanel({ onLoginSuccess }) {
       }
 
       if (mode === "login") {
-        // Pass user info back to App
         onLoginSuccess(data);
       } else {
-        alert("Registration successful! Please log in.");
+        setSuccess("Registration successful. Sign in with your new account.");
         setMode("login");
       }
     } catch (err) {
@@ -59,84 +53,73 @@ export default function AuthPanel({ onLoginSuccess }) {
   }
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        borderRadius: "10px",
-        border: "1px solid #e5e7eb",
-        marginBottom: "24px",
-        backgroundColor: "rgba(255,255,255,0.95)",
-      }}
-    >
-      <div style={{ marginBottom: "10px" }}>
+    <section className="auth-card">
+      <div className="auth-card__switcher">
         <button
+          className={mode === "login" ? "chip-button chip-button--active" : "chip-button"}
           type="button"
           onClick={() => setMode("login")}
-          disabled={mode === "login"}
         >
           Login
         </button>
         <button
+          className={mode === "register" ? "chip-button chip-button--active" : "chip-button"}
           type="button"
           onClick={() => setMode("register")}
-          disabled={mode === "register"}
-          style={{ marginLeft: "8px" }}
         >
           Register
         </button>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "8px" }}>
-          <label>
-            Email:
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              style={{ marginLeft: "8px" }}
-            />
-          </label>
+      {prompt ? (
+        <div className="info-banner">
+          <span>{prompt}</span>
+          <button type="button" onClick={onDismissPrompt}>
+            Dismiss
+          </button>
         </div>
+      ) : null}
 
-        <div style={{ marginBottom: "8px" }}>
+      {success ? <div className="success-banner">{success}</div> : null}
+      {error ? <div className="error-banner">{error}</div> : null}
+
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <label>
+          Email
+          <input
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+            placeholder="neighbor@example.com"
+          />
+        </label>
+
+        <label>
+          Password
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            placeholder="Enter your password"
+          />
+        </label>
+
+        {mode === "register" ? (
           <label>
-            Password:
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{ marginLeft: "8px" }}
-            />
+            Account role
+            <select value={role} onChange={(event) => setRole(event.target.value)}>
+              <option value="buyer">Neighbor / Buyer</option>
+              <option value="seller">Farmer / Seller</option>
+            </select>
           </label>
-        </div>
+        ) : null}
 
-        {mode === "register" && (
-          <div style={{ marginBottom: "8px" }}>
-            <label>
-              Role:
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                style={{ marginLeft: "8px" }}
-              >
-                <option value="buyer">Buyer</option>
-                <option value="seller">Seller</option>
-              </select>
-            </label>
-          </div>
-        )}
-
-        {error && (
-          <div style={{ color: "red", marginBottom: "8px" }}>{error}</div>
-        )}
-
-        <button type="submit" disabled={loading}>
+        <button className="button button--primary auth-form__submit" type="submit" disabled={loading}>
           {loading ? "Processing..." : mode === "login" ? "Login" : "Register"}
         </button>
       </form>
-    </div>
+    </section>
   );
 }

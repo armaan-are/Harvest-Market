@@ -1,0 +1,56 @@
+Milestone Delivery #7
+CSE-2102 Group Project - Spring 2026
+Frontend
+Deadline: 11:59pm, April 24
+Git
+• Use your exisKng team UConn GitHub repo for this milestone and for code delivered in
+future milestones.
+• Place all your frontend code in the "frontend" folder of your repo.
+• Use Pull Requests for all merges to "develop" and "main". Assign the Pull Request to
+someone else on your team. That other team member will do a code review on your
+code prior to accepKng the pull request.
+Frontend
+• Create a frontend React applicaKon based on your Figma design
+o Create your app as a Single-Page ApplicaKon (SPA) so that the enKre app does
+not reload when the client makes a call to the server.
+o Create at least two screens
+o Create a navigaKon/menu system that allows the user to switch between the
+screens you implemented.
+o Implement at least one "steel thread" user story. That means at least one feature
+in the UX that accesses the backend API (that in turn calls the database). So this
+could be display a list of products on the screen or having the state of the app
+change based on a single bu\on click.
+o You are obviously allowed to implement more than these minimum
+requirements.
+• In your exisKng README file, give instrucKons to the TA on how they should run your
+frontend so that it works with your backend instrucKons. In other words, how do you
+run them? Give those same instrucKons so the TA can run all your code in the same
+exact way as you do.
+GitHub AcKons (GHA) - automate all of these items in your pipeline
+• Build on your exisKng pipeline(s), do not create new pipelines
+The "Vibe Coding" & AI Policy
+You are encouraged to use AI (vibe coding) for refactoring, debugging, and fixing existing code.
+However:
+• Prohibited: Using AI to automatically generate entire "fresh" features or core logic from
+scratch.
+• Requirement: You must explicitly document how AI was used throughout your project.
+Grading
+• For grading, the TAs will look at the last successful GitHub AcKon pipeline run on the
+"main" branch prior to the due date for this milestone. You will be graded on the code
+associated with that commit.
+o Be sure to give yourself Kme to complete the pull request process and for the
+pipeline to run! In other words, don't try and do this five minutes before
+midnight.
+o Don't forget to add instrucKons for the TA in your README file. You don't want
+the TA to conclude your code doesn't work simply because your instrucKons
+were incorrect. Therefore, your README should contain instrucKons for running
+both the frontend and the backend as Docker containers that interact with each
+other. Include the localhost URL that the TA should use to access your frontend
+applicaKon.
+• Submit a PDF that specifies where and how AI (vibe coding) was used. If no AI was used,
+include the statement “No AI tools have been used” in the PDF.
+• You will meet with a TA during your lab. Your team may not yet be complete with all the
+milestone tasks, but your TA will be looking at:
+o Current status of your project board
+o Current status of your API code
+o Team collaboraKon and communicaKon.
