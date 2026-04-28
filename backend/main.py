@@ -34,7 +34,580 @@ app.config["SWAGGER"] = {
     "title": "Team 21 Local Farm Marketplace API",
     "uiversion": 3,
 }
-Swagger(app)
+SWAGGER_TEMPLATE = {
+    "swagger": "2.0",
+    "info": {
+        "title": "Team 21 Local Farm Marketplace API",
+        "description": "SQLite-backed API for the local farm marketplace.",
+        "version": "1.0.0",
+    },
+    "basePath": "/",
+    "schemes": ["http"],
+    "consumes": ["application/json"],
+    "produces": ["application/json"],
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "Use `Bearer <token>` from the login endpoint.",
+        }
+    },
+    "definitions": {
+        "Category": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "name": {"type": "string", "example": "Produce"},
+            },
+        },
+        "Product": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 2},
+                "title": {"type": "string", "example": "Free Range Eggs"},
+                "description": {"type": "string", "example": "One dozen local eggs."},
+                "price": {"type": "number", "format": "float", "example": 6.5},
+                "quantity_available": {"type": "integer", "example": 10},
+                "quantity_reserved": {"type": "integer", "example": 0},
+                "image_url": {"type": "string", "example": "/fruits/apple1.png"},
+                "seller_id": {"type": "integer", "example": 2},
+                "purchase_count": {"type": "integer", "example": 4},
+                "farm_name": {"type": "string", "example": "Mansfield Farm"},
+                "zip_code": {"type": "string", "example": "06268"},
+                "category": {"type": "string", "example": "produce"},
+                "average_rating": {"type": "number", "format": "float", "example": 4.75},
+            },
+        },
+        "ProductInput": {
+            "type": "object",
+            "required": ["title", "price", "category"],
+            "properties": {
+                "title": {"type": "string", "example": "Fresh Lettuce"},
+                "description": {"type": "string", "example": "Crisp and green."},
+                "price": {"type": "number", "format": "float", "example": 4.25},
+                "quantity_available": {"type": "integer", "example": 12},
+                "category": {"type": "string", "example": "produce"},
+                "image_url": {"type": "string", "example": "/fruits/orange1.png"},
+            },
+        },
+        "Message": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "product_id": {"type": "integer", "example": 2},
+                "buyer_id": {"type": "integer", "example": 1},
+                "seller_id": {"type": "integer", "example": 2},
+                "sender_id": {"type": "integer", "example": 1},
+                "sender_role": {"type": "string", "example": "buyer"},
+                "sender_email": {"type": "string", "example": "buyer@example.com"},
+                "content": {"type": "string", "example": "Can I pick this up tomorrow?"},
+                "created_at": {"type": "string", "example": "2026-04-28T12:00:00"},
+            },
+        },
+        "Order": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "buyer_id": {"type": "integer", "example": 1},
+                "seller_id": {"type": "integer", "example": 2},
+                "status": {"type": "string", "example": "pending"},
+                "pickup_window": {"type": "string", "example": "Saturday 10:00"},
+                "created_at": {"type": "string", "example": "2026-04-28T12:00:00"},
+            },
+        },
+        "Profile": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "email": {"type": "string", "example": "buyer@example.com"},
+                "role": {"type": "string", "example": "buyer"},
+                "full_name": {"type": "string", "example": "Finn Harrison"},
+                "phone": {"type": "string", "example": "860-111-2222"},
+                "home_zip": {"type": "string", "example": "06032"},
+            },
+        },
+        "Review": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "order_id": {"type": "integer", "example": 1},
+                "farmer_id": {"type": "integer", "example": 2},
+                "buyer_id": {"type": "integer", "example": 1},
+                "rating": {"type": "integer", "example": 5},
+                "comment": {"type": "string", "example": "Great pickup and produce quality."},
+                "created_at": {"type": "string", "example": "2026-04-28T12:00:00"},
+            },
+        },
+        "Error": {
+            "type": "object",
+            "properties": {
+                "detail": {"type": "string", "example": "Missing bearer token"},
+            },
+        },
+    },
+    "paths": {
+        "/api/health": {
+            "get": {
+                "tags": ["System"],
+                "summary": "Check backend health",
+                "responses": {
+                    "200": {
+                        "description": "Backend is running",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {"type": "string", "example": "ok"},
+                                "message": {
+                                    "type": "string",
+                                    "example": "Flask backend is running!",
+                                },
+                            },
+                        },
+                    }
+                },
+            }
+        },
+        "/api/categories": {
+            "get": {
+                "tags": ["Marketplace"],
+                "summary": "List product categories",
+                "responses": {
+                    "200": {
+                        "description": "Category list",
+                        "schema": {"type": "array", "items": {"$ref": "#/definitions/Category"}},
+                    }
+                },
+            }
+        },
+        "/api/register": {
+            "post": {
+                "tags": ["Auth"],
+                "summary": "Create a buyer or seller account",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {
+                            "type": "object",
+                            "required": ["email", "password", "role"],
+                            "properties": {
+                                "email": {"type": "string", "example": "newbuyer@example.com"},
+                                "password": {"type": "string", "example": "testpass"},
+                                "role": {"type": "string", "enum": ["buyer", "seller"]},
+                            },
+                        },
+                    }
+                ],
+                "responses": {
+                    "201": {"description": "Registration successful"},
+                    "400": {
+                        "description": "Invalid registration fields",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                    "409": {
+                        "description": "Email already registered",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": ["Auth"],
+                "summary": "Log in and receive a bearer token",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {
+                            "type": "object",
+                            "required": ["email", "password"],
+                            "properties": {
+                                "email": {"type": "string", "example": "buyer@example.com"},
+                                "password": {"type": "string", "example": "buyerpass"},
+                            },
+                        },
+                    }
+                ],
+                "responses": {
+                    "200": {"description": "Login successful"},
+                    "401": {
+                        "description": "Invalid credentials",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            }
+        },
+        "/api/products": {
+            "get": {
+                "tags": ["Marketplace"],
+                "summary": "List products with sorting and filters",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "sort",
+                        "type": "string",
+                        "enum": ["default", "price_asc", "price_desc", "popular"],
+                    },
+                    {"in": "query", "name": "category", "type": "string", "example": "produce"},
+                    {"in": "query", "name": "zipCode", "type": "string", "example": "06268"},
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product list",
+                        "schema": {"type": "array", "items": {"$ref": "#/definitions/Product"}},
+                    }
+                },
+            },
+            "post": {
+                "tags": ["Marketplace"],
+                "summary": "Create a seller product listing",
+                "security": [{"Bearer": []}],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {"$ref": "#/definitions/ProductInput"},
+                    }
+                ],
+                "responses": {
+                    "200": {"description": "Product created"},
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                    "403": {
+                        "description": "Seller access required",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            },
+        },
+        "/api/products/{product_id}": {
+            "put": {
+                "tags": ["Marketplace"],
+                "summary": "Update a seller product listing",
+                "security": [{"Bearer": []}],
+                "parameters": [
+                    {"in": "path", "name": "product_id", "type": "integer", "required": True},
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {"$ref": "#/definitions/ProductInput"},
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Product updated"},
+                    "400": {
+                        "description": "Invalid product payload",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                    "403": {
+                        "description": "Not allowed to update product",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            },
+            "delete": {
+                "tags": ["Marketplace"],
+                "summary": "Delete a seller product listing",
+                "security": [{"Bearer": []}],
+                "parameters": [
+                    {"in": "path", "name": "product_id", "type": "integer", "required": True}
+                ],
+                "responses": {
+                    "200": {"description": "Product deleted"},
+                    "403": {
+                        "description": "Not allowed to delete product",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            },
+        },
+        "/api/uploads": {
+            "post": {
+                "tags": ["Marketplace"],
+                "summary": "Upload a product image",
+                "consumes": ["multipart/form-data"],
+                "security": [{"Bearer": []}],
+                "parameters": [
+                    {"in": "formData", "name": "image", "type": "file", "required": True}
+                ],
+                "responses": {
+                    "201": {"description": "Image uploaded"},
+                    "403": {
+                        "description": "Seller access required",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            }
+        },
+        "/api/messages": {
+            "get": {
+                "tags": ["Messages"],
+                "summary": "List visible product messages",
+                "security": [{"Bearer": []}],
+                "parameters": [
+                    {"in": "query", "name": "productId", "type": "integer", "required": True}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Messages",
+                        "schema": {
+                            "type": "array",
+                            "items": {"$ref": "#/definitions/Message"},
+                        },
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            },
+            "post": {
+                "tags": ["Messages"],
+                "summary": "Send a product-linked message",
+                "security": [{"Bearer": []}],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {
+                            "type": "object",
+                            "required": ["productId", "content"],
+                            "properties": {
+                                "productId": {"type": "integer", "example": 2},
+                                "content": {
+                                    "type": "string",
+                                    "example": "Can I pick this up tomorrow?",
+                                },
+                            },
+                        },
+                    }
+                ],
+                "responses": {
+                    "201": {"description": "Message sent"},
+                    "400": {
+                        "description": "Invalid message payload",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            },
+        },
+        "/api/orders": {
+            "get": {
+                "tags": ["Orders"],
+                "summary": "List current user's orders",
+                "security": [{"Bearer": []}],
+                "parameters": [
+                    {"in": "query", "name": "status", "type": "string", "example": "pending"}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Orders",
+                        "schema": {
+                            "type": "array",
+                            "items": {"$ref": "#/definitions/Order"},
+                        },
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            },
+            "post": {
+                "tags": ["Orders"],
+                "summary": "Create a pending order",
+                "security": [{"Bearer": []}],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {
+                            "type": "object",
+                            "required": ["productId"],
+                            "properties": {
+                                "productId": {"type": "integer", "example": 2},
+                                "quantity": {"type": "integer", "example": 1},
+                                "pickupWindow": {"type": "string", "example": "Saturday 10:00"},
+                            },
+                        },
+                    }
+                ],
+                "responses": {
+                    "201": {"description": "Order created"},
+                    "400": {
+                        "description": "Invalid order payload",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            },
+        },
+        "/api/orders/{order_id}/status": {
+            "put": {
+                "tags": ["Orders"],
+                "summary": "Advance, reject, or cancel an order",
+                "security": [{"Bearer": []}],
+                "parameters": [
+                    {"in": "path", "name": "order_id", "type": "integer", "required": True},
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {
+                            "type": "object",
+                            "required": ["status"],
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "cancelled",
+                                        "completed",
+                                        "confirmed",
+                                        "rejected",
+                                        "ready_for_pickup",
+                                    ],
+                                }
+                            },
+                        },
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Order status updated"},
+                    "400": {
+                        "description": "Invalid status transition",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                    "403": {
+                        "description": "Not allowed to update order",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            }
+        },
+        "/api/purchases": {
+            "post": {
+                "tags": ["Orders"],
+                "summary": "Create a pending order through the legacy purchase route",
+                "security": [{"Bearer": []}],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {
+                            "type": "object",
+                            "required": ["productId"],
+                            "properties": {
+                                "productId": {"type": "integer", "example": 2},
+                                "quantity": {"type": "integer", "example": 1},
+                            },
+                        },
+                    }
+                ],
+                "responses": {"201": {"description": "Purchase/order created"}},
+            }
+        },
+        "/api/profile": {
+            "get": {
+                "tags": ["Profiles"],
+                "summary": "Fetch current user's profile",
+                "security": [{"Bearer": []}],
+                "responses": {
+                    "200": {"description": "Profile", "schema": {"$ref": "#/definitions/Profile"}},
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            },
+            "put": {
+                "tags": ["Profiles"],
+                "summary": "Update current user's profile",
+                "security": [{"Bearer": []}],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {"$ref": "#/definitions/Profile"},
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Profile updated",
+                        "schema": {"$ref": "#/definitions/Profile"},
+                    },
+                    "400": {
+                        "description": "Invalid profile payload",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            },
+        },
+        "/api/reviews": {
+            "get": {
+                "tags": ["Reviews"],
+                "summary": "List community reviews",
+                "parameters": [{"in": "query", "name": "farmerId", "type": "integer"}],
+                "responses": {
+                    "200": {
+                        "description": "Reviews",
+                        "schema": {
+                            "type": "array",
+                            "items": {"$ref": "#/definitions/Review"},
+                        },
+                    }
+                },
+            },
+            "post": {
+                "tags": ["Reviews"],
+                "summary": "Create a verified review for a completed order",
+                "security": [{"Bearer": []}],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {
+                            "type": "object",
+                            "required": ["orderId", "rating"],
+                            "properties": {
+                                "orderId": {"type": "integer", "example": 1},
+                                "rating": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 5,
+                                    "example": 5,
+                                },
+                                "comment": {
+                                    "type": "string",
+                                    "example": "Great pickup and produce quality.",
+                                },
+                            },
+                        },
+                    }
+                ],
+                "responses": {
+                    "201": {"description": "Review created"},
+                    "400": {
+                        "description": "Invalid review payload",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                },
+            },
+        },
+    },
+}
+Swagger(app, template=SWAGGER_TEMPLATE)
 
 
 def reset_mock_state() -> None:
