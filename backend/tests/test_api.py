@@ -29,8 +29,12 @@ def test_swagger_docs_are_enabled():
     client = create_app().test_client()
 
     response = client.get("/apidocs/")
+    spec_response = client.get("/apispec_1.json")
+    spec = spec_response.get_json()
 
     assert response.status_code == 200
+    assert spec_response.status_code == 200
+    assert spec["paths"]["/api/products"]["get"]["summary"] == "List products with sorting and filters"
 
 
 def test_register_then_login_creates_profile():
