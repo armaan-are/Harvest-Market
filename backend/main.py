@@ -202,8 +202,14 @@ SWAGGER_TEMPLATE = {
                 ],
                 "responses": {
                     "201": {"description": "Registration successful"},
-                    "400": {"description": "Invalid registration fields", "schema": {"$ref": "#/definitions/Error"}},
-                    "409": {"description": "Email already registered", "schema": {"$ref": "#/definitions/Error"}},
+                    "400": {
+                        "description": "Invalid registration fields",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                    "409": {
+                        "description": "Email already registered",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             }
         },
@@ -228,7 +234,10 @@ SWAGGER_TEMPLATE = {
                 ],
                 "responses": {
                     "200": {"description": "Login successful"},
-                    "401": {"description": "Invalid credentials", "schema": {"$ref": "#/definitions/Error"}},
+                    "401": {
+                        "description": "Invalid credentials",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             }
         },
@@ -237,7 +246,12 @@ SWAGGER_TEMPLATE = {
                 "tags": ["Marketplace"],
                 "summary": "List products with sorting and filters",
                 "parameters": [
-                    {"in": "query", "name": "sort", "type": "string", "enum": ["default", "price_asc", "price_desc", "popular"]},
+                    {
+                        "in": "query",
+                        "name": "sort",
+                        "type": "string",
+                        "enum": ["default", "price_asc", "price_desc", "popular"],
+                    },
                     {"in": "query", "name": "category", "type": "string", "example": "produce"},
                     {"in": "query", "name": "zipCode", "type": "string", "example": "06268"},
                 ],
@@ -252,11 +266,24 @@ SWAGGER_TEMPLATE = {
                 "tags": ["Marketplace"],
                 "summary": "Create a seller product listing",
                 "security": [{"Bearer": []}],
-                "parameters": [{"in": "body", "name": "body", "required": True, "schema": {"$ref": "#/definitions/ProductInput"}}],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {"$ref": "#/definitions/ProductInput"},
+                    }
+                ],
                 "responses": {
                     "200": {"description": "Product created"},
-                    "401": {"description": "Missing or invalid token", "schema": {"$ref": "#/definitions/Error"}},
-                    "403": {"description": "Seller access required", "schema": {"$ref": "#/definitions/Error"}},
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                    "403": {
+                        "description": "Seller access required",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             },
         },
@@ -267,22 +294,38 @@ SWAGGER_TEMPLATE = {
                 "security": [{"Bearer": []}],
                 "parameters": [
                     {"in": "path", "name": "product_id", "type": "integer", "required": True},
-                    {"in": "body", "name": "body", "required": True, "schema": {"$ref": "#/definitions/ProductInput"}},
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {"$ref": "#/definitions/ProductInput"},
+                    },
                 ],
                 "responses": {
                     "200": {"description": "Product updated"},
-                    "400": {"description": "Invalid product payload", "schema": {"$ref": "#/definitions/Error"}},
-                    "403": {"description": "Not allowed to update product", "schema": {"$ref": "#/definitions/Error"}},
+                    "400": {
+                        "description": "Invalid product payload",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                    "403": {
+                        "description": "Not allowed to update product",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             },
             "delete": {
                 "tags": ["Marketplace"],
                 "summary": "Delete a seller product listing",
                 "security": [{"Bearer": []}],
-                "parameters": [{"in": "path", "name": "product_id", "type": "integer", "required": True}],
+                "parameters": [
+                    {"in": "path", "name": "product_id", "type": "integer", "required": True}
+                ],
                 "responses": {
                     "200": {"description": "Product deleted"},
-                    "403": {"description": "Not allowed to delete product", "schema": {"$ref": "#/definitions/Error"}},
+                    "403": {
+                        "description": "Not allowed to delete product",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             },
         },
@@ -297,7 +340,10 @@ SWAGGER_TEMPLATE = {
                 ],
                 "responses": {
                     "201": {"description": "Image uploaded"},
-                    "403": {"description": "Seller access required", "schema": {"$ref": "#/definitions/Error"}},
+                    "403": {
+                        "description": "Seller access required",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             }
         },
@@ -306,10 +352,21 @@ SWAGGER_TEMPLATE = {
                 "tags": ["Messages"],
                 "summary": "List visible product messages",
                 "security": [{"Bearer": []}],
-                "parameters": [{"in": "query", "name": "productId", "type": "integer", "required": True}],
+                "parameters": [
+                    {"in": "query", "name": "productId", "type": "integer", "required": True}
+                ],
                 "responses": {
-                    "200": {"description": "Messages", "schema": {"type": "array", "items": {"$ref": "#/definitions/Message"}}},
-                    "401": {"description": "Missing or invalid token", "schema": {"$ref": "#/definitions/Error"}},
+                    "200": {
+                        "description": "Messages",
+                        "schema": {
+                            "type": "array",
+                            "items": {"$ref": "#/definitions/Message"},
+                        },
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             },
             "post": {
@@ -326,14 +383,20 @@ SWAGGER_TEMPLATE = {
                             "required": ["productId", "content"],
                             "properties": {
                                 "productId": {"type": "integer", "example": 2},
-                                "content": {"type": "string", "example": "Can I pick this up tomorrow?"},
+                                "content": {
+                                    "type": "string",
+                                    "example": "Can I pick this up tomorrow?",
+                                },
                             },
                         },
                     }
                 ],
                 "responses": {
                     "201": {"description": "Message sent"},
-                    "400": {"description": "Invalid message payload", "schema": {"$ref": "#/definitions/Error"}},
+                    "400": {
+                        "description": "Invalid message payload",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             },
         },
@@ -342,10 +405,21 @@ SWAGGER_TEMPLATE = {
                 "tags": ["Orders"],
                 "summary": "List current user's orders",
                 "security": [{"Bearer": []}],
-                "parameters": [{"in": "query", "name": "status", "type": "string", "example": "pending"}],
+                "parameters": [
+                    {"in": "query", "name": "status", "type": "string", "example": "pending"}
+                ],
                 "responses": {
-                    "200": {"description": "Orders", "schema": {"type": "array", "items": {"$ref": "#/definitions/Order"}}},
-                    "401": {"description": "Missing or invalid token", "schema": {"$ref": "#/definitions/Error"}},
+                    "200": {
+                        "description": "Orders",
+                        "schema": {
+                            "type": "array",
+                            "items": {"$ref": "#/definitions/Order"},
+                        },
+                    },
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             },
             "post": {
@@ -370,7 +444,10 @@ SWAGGER_TEMPLATE = {
                 ],
                 "responses": {
                     "201": {"description": "Order created"},
-                    "400": {"description": "Invalid order payload", "schema": {"$ref": "#/definitions/Error"}},
+                    "400": {
+                        "description": "Invalid order payload",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             },
         },
@@ -391,7 +468,13 @@ SWAGGER_TEMPLATE = {
                             "properties": {
                                 "status": {
                                     "type": "string",
-                                    "enum": ["confirmed", "ready_for_pickup", "completed", "rejected", "cancelled"],
+                                    "enum": [
+                                        "cancelled",
+                                        "completed",
+                                        "confirmed",
+                                        "rejected",
+                                        "ready_for_pickup",
+                                    ],
                                 }
                             },
                         },
@@ -399,8 +482,14 @@ SWAGGER_TEMPLATE = {
                 ],
                 "responses": {
                     "200": {"description": "Order status updated"},
-                    "400": {"description": "Invalid status transition", "schema": {"$ref": "#/definitions/Error"}},
-                    "403": {"description": "Not allowed to update order", "schema": {"$ref": "#/definitions/Error"}},
+                    "400": {
+                        "description": "Invalid status transition",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
+                    "403": {
+                        "description": "Not allowed to update order",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             }
         },
@@ -434,17 +523,33 @@ SWAGGER_TEMPLATE = {
                 "security": [{"Bearer": []}],
                 "responses": {
                     "200": {"description": "Profile", "schema": {"$ref": "#/definitions/Profile"}},
-                    "401": {"description": "Missing or invalid token", "schema": {"$ref": "#/definitions/Error"}},
+                    "401": {
+                        "description": "Missing or invalid token",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             },
             "put": {
                 "tags": ["Profiles"],
                 "summary": "Update current user's profile",
                 "security": [{"Bearer": []}],
-                "parameters": [{"in": "body", "name": "body", "required": True, "schema": {"$ref": "#/definitions/Profile"}}],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "schema": {"$ref": "#/definitions/Profile"},
+                    }
+                ],
                 "responses": {
-                    "200": {"description": "Profile updated", "schema": {"$ref": "#/definitions/Profile"}},
-                    "400": {"description": "Invalid profile payload", "schema": {"$ref": "#/definitions/Error"}},
+                    "200": {
+                        "description": "Profile updated",
+                        "schema": {"$ref": "#/definitions/Profile"},
+                    },
+                    "400": {
+                        "description": "Invalid profile payload",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             },
         },
@@ -454,7 +559,13 @@ SWAGGER_TEMPLATE = {
                 "summary": "List community reviews",
                 "parameters": [{"in": "query", "name": "farmerId", "type": "integer"}],
                 "responses": {
-                    "200": {"description": "Reviews", "schema": {"type": "array", "items": {"$ref": "#/definitions/Review"}}}
+                    "200": {
+                        "description": "Reviews",
+                        "schema": {
+                            "type": "array",
+                            "items": {"$ref": "#/definitions/Review"},
+                        },
+                    }
                 },
             },
             "post": {
@@ -471,15 +582,26 @@ SWAGGER_TEMPLATE = {
                             "required": ["orderId", "rating"],
                             "properties": {
                                 "orderId": {"type": "integer", "example": 1},
-                                "rating": {"type": "integer", "minimum": 1, "maximum": 5, "example": 5},
-                                "comment": {"type": "string", "example": "Great pickup and produce quality."},
+                                "rating": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 5,
+                                    "example": 5,
+                                },
+                                "comment": {
+                                    "type": "string",
+                                    "example": "Great pickup and produce quality.",
+                                },
                             },
                         },
                     }
                 ],
                 "responses": {
                     "201": {"description": "Review created"},
-                    "400": {"description": "Invalid review payload", "schema": {"$ref": "#/definitions/Error"}},
+                    "400": {
+                        "description": "Invalid review payload",
+                        "schema": {"$ref": "#/definitions/Error"},
+                    },
                 },
             },
         },

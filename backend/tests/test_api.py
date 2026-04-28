@@ -34,7 +34,10 @@ def test_swagger_docs_are_enabled():
 
     assert response.status_code == 200
     assert spec_response.status_code == 200
-    assert spec["paths"]["/api/products"]["get"]["summary"] == "List products with sorting and filters"
+    assert (
+        spec["paths"]["/api/products"]["get"]["summary"]
+        == "List products with sorting and filters"
+    )
 
 
 def test_register_then_login_creates_profile():
