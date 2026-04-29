@@ -8,7 +8,7 @@ export default function DashboardSidebar({ currentUser, activeSection, action = 
   return (
     <aside className="dashboard-sidebar">
       <div className="dashboard-sidebar__brand">
-        <strong>The Harvest Hub</strong>
+        <strong>Harvest Market</strong>
         <span>{isBuyer ? "Neighbor Account" : "Digital Agrarian Member"}</span>
       </div>
 
@@ -34,17 +34,12 @@ export default function DashboardSidebar({ currentUser, activeSection, action = 
 }
 
 const buyerLinks = [
-  { key: "marketplace", label: "Marketplace", to: "/marketplace" },
   { key: "orders", label: "My Orders", to: "/orders" },
-  { key: "reviews", label: "Reviews", to: "/community" },
   { key: "profile", label: "Neighbor Profile", to: "/profile" },
 ];
 
 const sellerLinks = [
-  { key: "marketplace", label: "Marketplace", to: "/marketplace" },
-  { key: "seller-studio", label: "Seller Studio", to: "/marketplace#live-marketplace" },
   { key: "orders", label: "Incoming Requests", to: "/orders" },
-  { key: "reviews", label: "Reviews", to: "/community" },
   { key: "profile", label: "Farm Profile", to: "/profile" },
 ];
 

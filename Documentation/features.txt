@@ -1,5 +1,55 @@
-Survey: Users can take a survey on their favorite products/sellers, so that the web app generates suggestions that best suit them.  
+Feature List
 
-Reviews: When a user clicks on an item, there can be a star rating. (e.g.  Farmer John Doe’s carrots are a 3.5/5 stars)  
+Authentication and Roles
+- Users can register and log in as a Neighbor/Buyer or Farmer/Seller.
+- The backend stores salted password hashes and issues random bearer tokens.
+- Protected routes enforce role-specific access.
 
-Share Button: Have users been able to send a link to a certain product via social media and/or through text.  
+Profiles
+- Buyers can store full name, phone number, and home zip code.
+- Sellers can store farm name, biography, pickup address, operating hours, and farm zip code.
+
+Marketplace Discovery
+- Users can browse product listings from local farms.
+- Users can search listings by text.
+- Users can sort listings by default order, price, or popularity.
+- Users can filter listings by category.
+- Users can filter listings by farm zip code.
+- The marketplace displays farm name, category, inventory count, purchase count, and average rating.
+
+Seller Inventory Management
+- Sellers can create product listings.
+- Sellers can edit their own product listings.
+- Sellers can delete their own product listings.
+- Sellers can upload actual product image files.
+- Listings support Produce, Dairy, Meat, and Baked Goods categories.
+
+Order Lifecycle
+- Buyers can submit pickup order requests.
+- New orders start in Pending state and reserve inventory.
+- Sellers can approve Pending orders, moving them to Confirmed and deducting inventory.
+- Sellers can reject Pending orders, releasing reserved inventory.
+- Buyers can cancel their own Pending orders, releasing reserved inventory.
+- Sellers can mark Confirmed orders as Ready for Pickup.
+- Sellers can complete Ready for Pickup orders after physical pickup.
+
+Dashboards
+- Buyers have a My Orders dashboard for tracking active and past orders.
+- Sellers have an Incoming Requests dashboard for managing pending and active orders.
+- Both dashboards support status filtering.
+
+Messaging
+- Logged-in users can send product-linked messages.
+- Buyers can start product conversations.
+- Sellers and buyers can view messages only when they are part of the conversation.
+
+Community Trust
+- Reviews include a 1-5 star rating and comment.
+- Buyers can only review completed orders that belong to them.
+- Each completed order can receive only one review.
+- Community reviews are visible on the Reviews page and can be searched or sorted.
+
+Documentation and Operations
+- Swagger API documentation is available at /apidocs/.
+- Docker Compose runs the frontend and backend together.
+- GitHub Actions runs backend lint/tests and frontend lint/build.

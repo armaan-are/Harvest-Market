@@ -56,11 +56,11 @@ export default function OrdersPage({
 
       <section className="dashboard-content">
         <div className="section-heading">
-          <p className="eyebrow">{isBuyer ? "Order Ledger" : "Inventory Alerts"}</p>
+          <p className="eyebrow">{isBuyer ? "Order Ledger" : "Farmer Dashboard"}</p>
           <h1>
             {isBuyer
               ? "My Orders"
-              : "Inventory Alerts"}
+              : "Incoming Requests"}
           </h1>
           <p>
             {isBuyer

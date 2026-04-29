@@ -14,7 +14,6 @@ const categories = [
 
 export default function MarketplacePage({
   currentUser,
-  editTarget,
   featuredStats,
   focusKeyword,
   loadingProducts,
@@ -26,13 +25,11 @@ export default function MarketplacePage({
   onOpenMessages,
   onPurchase,
   onRequireAuth,
-  onSaveEdit,
   onSearchChange,
   onSetCategory,
   onSetSortOrder,
   onSetZipFilter,
   products,
-  savingEdit,
   savingProduct,
   searchTerm,
   selectedCategory,
@@ -200,12 +197,10 @@ export default function MarketplacePage({
 
             {isSeller ? (
               <CreateProductForm
-                key={editTarget ? `edit-${editTarget.id}` : "create"}
-                mode={editTarget ? "edit" : "create"}
-                initialData={editTarget}
+                key="create-product"
+                mode="create"
                 onCreate={onCreateProduct}
-                onEdit={onSaveEdit}
-                loading={editTarget ? savingEdit : savingProduct}
+                loading={savingProduct}
               />
             ) : null}
           </aside>
@@ -225,7 +220,7 @@ export default function MarketplacePage({
 
       <footer className="editorial-footer">
         <div>
-          <p className="brand-kicker">The Editorial Harvest</p>
+          <p className="brand-kicker">Harvest Market</p>
           <strong>Harvest-led commerce for neighbors and growers.</strong>
         </div>
         <div className="editorial-footer__links">

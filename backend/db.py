@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import os
+import hashlib
+import hmac
 import sqlite3
+import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -24,6 +27,14 @@ SCHEMA = [
         password TEXT NOT NULL,
         role TEXT NOT NULL CHECK(role IN ('buyer', 'seller')),
         created_at TEXT NOT NULL
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS session_tokens (
+        token TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
     """,
     """
@@ -155,8 +166,35 @@ def get_conn() -> sqlite3.Connection:
 
 
 def make_token(user_id: int, role: str) -> str:
-    """Return a predictable bearer token for the local app."""
-    return f"db-token-{user_id}-{role}"
+    """Return a random bearer token for a logged-in session."""
+    del user_id, role
+    return f"team21-{secrets.token_urlsafe(32)}"
+
+
+def hash_password(password: str) -> str:
+    """Hash a password with a per-password salt."""
+    salt = secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 120000)
+    return f"pbkdf2_sha256${salt}${digest.hex()}"
+
+
+def verify_password(password: str, stored_password: str) -> bool:
+    """Verify a password hash, allowing legacy seed plaintext during upgrades."""
+    if not stored_password.startswith("pbkdf2_sha256$"):
+        return hmac.compare_digest(password, stored_password)
+
+    try:
+        _, salt, digest = stored_password.split("$", 2)
+    except ValueError:
+        return False
+
+    candidate = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt.encode("utf-8"),
+        120000,
+    ).hex()
+    return hmac.compare_digest(candidate, digest)
 
 
 def init_database() -> None:
@@ -194,10 +232,10 @@ def seed_database(conn: sqlite3.Connection) -> None:
     conn.executemany(
         "INSERT INTO users (id, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)",
         [
-            (1, "buyer@example.com", "buyerpass", "buyer", timestamp),
-            (2, "seller@example.com", "sellerpass", "seller", timestamp),
-            (3, "neighbor.jules@example.com", "buyerpass", "buyer", timestamp),
-            (4, "orchard.collective@example.com", "sellerpass", "seller", timestamp),
+            (1, "buyer@example.com", hash_password("buyerpass"), "buyer", timestamp),
+            (2, "seller@example.com", hash_password("sellerpass"), "seller", timestamp),
+            (3, "neighbor.jules@example.com", hash_password("buyerpass"), "buyer", timestamp),
+            (4, "orchard.collective@example.com", hash_password("sellerpass"), "seller", timestamp),
         ],
     )
     conn.executemany(

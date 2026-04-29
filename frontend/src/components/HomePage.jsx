@@ -9,12 +9,14 @@ export default function HomePage({
 }) {
   const [shareTarget, setShareTarget] = useState(null);
   const navigate = useNavigate();
+  const workspaceLabel =
+    currentUser?.role === "seller" ? "Incoming Requests" : "My Orders";
 
   return (
     <div className="editorial-page">
       <section className="editorial-hero">
         <div className="editorial-hero__copy">
-          <h1>The Editorial Harvest</h1>
+          <h1>Harvest Market</h1>
           <p>
             Browse nearby farms, request pickup orders, track every status change,
             and leave verified reviews after pickup.
@@ -32,13 +34,13 @@ export default function HomePage({
               type="button"
               onClick={() => {
                 if (currentUser) {
-                  navigate(currentUser.role === "seller" ? "/profile" : "/orders");
+                  navigate("/orders");
                 } else {
                   onRequireAuth("Create an account to start buying or selling.");
                 }
               }}
             >
-              {currentUser ? "My Workspace" : "Get Started"}
+              {currentUser ? workspaceLabel : "Get Started"}
             </button>
           </div>
         </div>

@@ -5,7 +5,7 @@ export default function AppShell({ children, currentUser, onLogout, statusMessag
     <div className="app-shell">
       <header className="topbar">
         <NavLink className="brand-mark brand-mark--editorial" to="/">
-          The Editorial Harvest
+          Harvest Market
         </NavLink>
 
         <nav className="topbar__nav" aria-label="Primary">

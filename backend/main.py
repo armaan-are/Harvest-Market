@@ -717,6 +717,9 @@ def upload_image():
     file_storage = request.files.get("image")
     if file_storage is None or not file_storage.filename:
         return jsonify({"detail": "image is required"}), 400
+    extension = Path(file_storage.filename).suffix.lower()
+    if extension not in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
+        return jsonify({"detail": "Upload a JPG, PNG, GIF, or WebP image"}), 400
 
     return jsonify({"imagePath": save_upload(file_storage)}), 201
 

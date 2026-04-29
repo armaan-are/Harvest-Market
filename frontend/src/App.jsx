@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { API_BASE } from "./api";
 
 import AppShell from "./components/AppShell";
 import AuthPanel from "./components/AuthPanel";
+import CheckoutModal from "./components/CheckoutModal";
 import CommunityPage from "./components/CommunityPage";
 import HomePage from "./components/HomePage";
+import EditProductModal from "./components/EditProductModal";
 import MarketplacePage from "./components/MarketplacePage";
 import MessagesPanel from "./components/MessagesPanel";
 import OrdersPage from "./components/OrdersPage";
@@ -33,10 +35,12 @@ export default function App() {
   const [editTarget, setEditTarget] = useState(null);
   const [savingEdit, setSavingEdit] = useState(false);
   const [savingProduct, setSavingProduct] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [authPrompt, setAuthPrompt] = useState("");
 
   const [orders, setOrders] = useState([]);
+  const [checkoutProduct, setCheckoutProduct] = useState(null);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [orderFilter, setOrderFilter] = useState("all");
 
@@ -47,8 +51,6 @@ export default function App() {
   const [reviewOrders, setReviewOrders] = useState([]);
 
   const navigate = useNavigate();
-  const location = useLocation();
-
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     const savedToken = localStorage.getItem("token");
@@ -300,53 +302,51 @@ export default function App() {
     await loadProducts();
   }
 
-  async function handlePurchase(item) {
+  function handlePurchase(item) {
     if (!token) {
       setAuthPrompt("Please sign in as a neighbor to place an order request.");
       navigate("/auth");
       return;
     }
 
-    const quantityInput = window.prompt(
-      `How many ${item.title} would you like to request?`,
-      "1"
-    );
-    if (quantityInput === null) {
+    if (currentUser?.role !== "buyer") {
+      setStatusMessage("Use a neighbor account to request pickup orders");
       return;
     }
 
-    const quantity = Number.parseInt(quantityInput, 10);
-    if (!Number.isInteger(quantity) || quantity <= 0) {
-      setStatusMessage("Enter a whole number quantity to place an order");
-      return;
+    setCheckoutProduct(item);
+  }
+
+  async function handleSubmitOrder(item, orderRequest) {
+    setSavingOrder(true);
+    const { quantity, pickupWindow } = orderRequest;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
+        },
+        body: JSON.stringify({
+          productId: item.id,
+          quantity,
+          pickupWindow,
+        }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        setStatusMessage(result.detail || result.message || "Order request failed");
+        return;
+      }
+
+      setCheckoutProduct(null);
+      setStatusMessage(`Pending pickup request created for ${quantity} ${item.title}`);
+      await Promise.all([loadProducts(), loadOrders()]);
+    } finally {
+      setSavingOrder(false);
     }
-
-    const pickupWindow = window.prompt(
-      "Optional pickup window for this order request:",
-      "Saturday 10:00 AM"
-    );
-
-    const res = await fetch(`${API_BASE}/api/orders`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders,
-      },
-      body: JSON.stringify({
-        productId: item.id,
-        quantity,
-        pickupWindow: pickupWindow || "",
-      }),
-    });
-
-    const result = await res.json();
-    if (!res.ok) {
-      setStatusMessage(result.detail || result.message || "Order request failed");
-      return;
-    }
-
-    setStatusMessage(`Pending order created for ${quantity} ${item.title}`);
-    await Promise.all([loadProducts(), loadOrders()]);
   }
 
   async function handleOpenMessages(product) {
@@ -402,9 +402,6 @@ export default function App() {
   function handleEditProduct(product) {
     setEditTarget(product);
     setStatusMessage(`Editing ${product.title}`);
-    if (location.pathname !== "/marketplace") {
-      navigate("/marketplace");
-    }
   }
 
   async function handleSaveEdit(update) {
@@ -583,7 +580,7 @@ export default function App() {
           element={
             <section className="auth-route">
               <div className="auth-route__intro">
-                <p className="eyebrow">Sign In To Your Harvest Hub</p>
+                <p className="eyebrow">Sign In To Harvest Market</p>
                 <h1>Join the local marketplace built for neighbors and farmers.</h1>
                 <p>
                   Buyers can track order status through pickup. Sellers can manage inventory,
@@ -603,7 +600,6 @@ export default function App() {
           element={
             <MarketplacePage
               currentUser={currentUser}
-              editTarget={editTarget}
               featuredStats={featuredStats}
               focusKeyword={focusKeyword}
               loadingProducts={loadingProducts}
@@ -615,13 +611,11 @@ export default function App() {
               onOpenMessages={handleOpenMessages}
               onPurchase={handlePurchase}
               onRequireAuth={requireAuth}
-              onSaveEdit={handleSaveEdit}
               onSearchChange={setSearchTerm}
               onSetCategory={setActiveCategory}
               onSetSortOrder={setSortOrder}
               onSetZipFilter={setZipFilter}
               products={finalProducts}
-              savingEdit={savingEdit}
               savingProduct={savingProduct}
               searchTerm={searchTerm}
               selectedCategory={activeCategory}
@@ -687,6 +681,32 @@ export default function App() {
         onClose={() => setActiveProduct(null)}
         onSendMessage={handleSendMessage}
       />
+      {checkoutProduct ? (
+        <CheckoutModal
+          key={checkoutProduct.id}
+          product={checkoutProduct}
+          loading={savingOrder}
+          onClose={() => {
+            if (!savingOrder) {
+              setCheckoutProduct(null);
+            }
+          }}
+          onSubmit={handleSubmitOrder}
+        />
+      ) : null}
+      {editTarget ? (
+        <EditProductModal
+          key={`edit-modal-${editTarget.id}`}
+          product={editTarget}
+          loading={savingEdit}
+          onClose={() => {
+            if (!savingEdit) {
+              setEditTarget(null);
+            }
+          }}
+          onSave={handleSaveEdit}
+        />
+      ) : null}
     </AppShell>
   );
 }

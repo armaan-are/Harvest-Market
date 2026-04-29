@@ -916,10 +916,51 @@
   background: #fff8e4;
 }
 
+.image-preview {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255, 250, 235, 0.72);
+  border: 1px solid rgba(41, 72, 43, 0.1);
+}
+
+.image-preview img {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.advanced-field {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 250, 235, 0.56);
+  border: 1px dashed rgba(41, 72, 43, 0.14);
+}
+
+.advanced-field summary {
+  cursor: pointer;
+  color: var(--brand-strong);
+}
+
+.advanced-field label {
+  margin-top: 12px;
+}
+
 .seller-form__row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+
+.seller-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 .product-grid {
@@ -1385,6 +1426,77 @@
   max-height: min(80vh, 780px);
   display: grid;
   gap: 18px;
+}
+
+.checkout-modal {
+  width: min(560px, 100%);
+  max-height: min(88vh, 780px);
+  display: grid;
+  gap: 18px;
+  padding: 26px;
+  overflow-y: auto;
+  border-radius: 14px;
+  background: rgba(255, 249, 229, 0.97);
+  box-shadow: var(--shadow);
+}
+
+.edit-product-modal {
+  width: min(680px, 100%);
+  max-height: min(88vh, 820px);
+  display: grid;
+  gap: 18px;
+  padding: 26px;
+  overflow-y: auto;
+  border-radius: 14px;
+  background: rgba(255, 249, 229, 0.97);
+  box-shadow: var(--shadow);
+}
+
+.edit-product-modal .seller-panel {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.edit-product-modal .seller-panel > .section-heading {
+  display: none;
+}
+
+.checkout-modal__product {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(239, 236, 212, 0.62);
+}
+
+.checkout-modal__product img {
+  width: 82px;
+  height: 82px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.checkout-modal__product div,
+.checkout-modal__summary {
+  display: grid;
+  gap: 4px;
+}
+
+.checkout-modal__summary {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 14px 0;
+  border-top: 1px solid rgba(41, 72, 43, 0.1);
+  border-bottom: 1px solid rgba(41, 72, 43, 0.1);
+}
+
+.checkout-modal__summary strong {
+  color: var(--accent);
+  font-size: 1.35rem;
 }
 
 .message-thread {

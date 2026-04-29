@@ -73,7 +73,7 @@ export default function ProductList({
                         onClick={() => onPurchase(product)}
                         disabled={isSoldOut}
                       >
-                        {isSoldOut ? "Sold Out" : "Purchase"}
+                        {isSoldOut ? "Sold Out" : "Request Pickup"}
                       </button>
                     ) : null}
 

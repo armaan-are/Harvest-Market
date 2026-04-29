@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from sqlite3 import Connection
 
-from backend.db import get_conn, make_token, now_iso
+from backend.db import get_conn, hash_password, make_token, now_iso, verify_password
 
 
 STATUS_FLOW = {
@@ -35,7 +35,7 @@ def register_user(email: str, password: str, role: str):
             INSERT INTO users (email, password, role, created_at)
             VALUES (?, ?, ?, ?)
             """,
-            (email, password, role, now_iso()),
+            (email, hash_password(password), role, now_iso()),
         )
         user_id = cursor.lastrowid
 
@@ -71,12 +71,22 @@ def login_user(email: str | None, password: str | None):
             (email,),
         ).fetchone()
 
-    if user is None or user["password"] != password:
+    if user is None or not verify_password(password, user["password"]):
         return {"detail": "Invalid email or password"}, 401
+
+    token = make_token(user["id"], user["role"])
+    with get_conn() as conn:
+        conn.execute(
+            """
+            INSERT INTO session_tokens (token, user_id, created_at)
+            VALUES (?, ?, ?)
+            """,
+            (token, user["id"], now_iso()),
+        )
 
     return {
         "message": "Login successful",
-        "token": make_token(user["id"], user["role"]),
+        "token": token,
         "role": user["role"],
         "email": user["email"],
         "userId": user["id"],
@@ -89,10 +99,17 @@ def get_user_from_token(token: str | None):
         return None
 
     with get_conn() as conn:
-        users = conn.execute("SELECT id, email, role FROM users").fetchall()
-        for user in users:
-            if token == make_token(user["id"], user["role"]):
-                return dict(user)
+        user = conn.execute(
+            """
+            SELECT u.id, u.email, u.role
+            FROM session_tokens st
+            JOIN users u ON u.id = st.user_id
+            WHERE st.token = ?
+            """,
+            (token,),
+        ).fetchone()
+        if user:
+            return dict(user)
     return None
 
 
@@ -397,10 +414,10 @@ def create_order_record(current_user: dict, body: dict):
     if current_user["role"] != "buyer":
         return {"detail": "Only buyers can place orders"}, 403
 
-    product_id = body.get("productId")
-    quantity = int(body.get("quantity", 1))
-    if not product_id or quantity <= 0:
-        return {"detail": "productId and a positive quantity are required"}, 400
+    parsed_request, error = _parse_order_request(body)
+    if error:
+        return error, 400
+    product_id, quantity, pickup_window = parsed_request
 
     with get_conn() as conn:
         product = conn.execute(
@@ -428,7 +445,7 @@ def create_order_record(current_user: dict, body: dict):
             (
                 current_user["id"],
                 product["seller_id"],
-                body.get("pickupWindow", ""),
+                pickup_window,
                 timestamp,
                 timestamp,
             ),
@@ -451,6 +468,22 @@ def create_order_record(current_user: dict, body: dict):
         )
 
     return {"message": "Order request submitted", "orderId": order_id}, 201
+
+
+def _parse_order_request(body: dict):
+    product_id = body.get("productId")
+    try:
+        quantity = int(body.get("quantity", 1))
+    except (TypeError, ValueError):
+        return None, {"detail": "productId and a positive quantity are required"}
+
+    pickup_window = (body.get("pickupWindow") or "").strip()
+    if not product_id or quantity <= 0:
+        return None, {"detail": "productId and a positive quantity are required"}
+    if len(pickup_window) > 80:
+        return None, {"detail": "Pickup window must be 80 characters or fewer"}
+
+    return (product_id, quantity, pickup_window), None
 
 
 def list_orders_for_user(current_user: dict, status: str | None = None):
@@ -616,6 +649,9 @@ def update_profile(current_user: dict, body: dict):
     """Update the role-specific profile for the current user."""
     with get_conn() as conn:
         if current_user["role"] == "buyer":
+            home_zip = (body.get("home_zip") or "").strip()
+            if home_zip and not _is_zip_code(home_zip):
+                return {"detail": "Home zip must be a 5-digit zip code"}, 400
             conn.execute(
                 """
                 UPDATE buyer_profiles
@@ -625,11 +661,14 @@ def update_profile(current_user: dict, body: dict):
                 (
                     (body.get("full_name") or "").strip(),
                     (body.get("phone") or "").strip(),
-                    (body.get("home_zip") or "").strip(),
+                    home_zip,
                     current_user["id"],
                 ),
             )
         else:
+            zip_code = (body.get("zip_code") or "").strip()
+            if zip_code and not _is_zip_code(zip_code):
+                return {"detail": "Farm zip code must be a 5-digit zip code"}, 400
             conn.execute(
                 """
                 UPDATE farm_profiles
@@ -642,7 +681,7 @@ def update_profile(current_user: dict, body: dict):
                     (body.get("biography") or "").strip(),
                     (body.get("pickup_address") or "").strip(),
                     (body.get("operating_hours") or "").strip(),
-                    (body.get("zip_code") or "").strip(),
+                    zip_code,
                     current_user["id"],
                 ),
             )
@@ -767,6 +806,10 @@ def _get_category_id(category: str | None) -> int:
     if row is None:
         raise ValueError("Invalid category")
     return row["id"]
+
+
+def _is_zip_code(value: str) -> bool:
+    return len(value) == 5 and value.isdigit()
 
 
 def _fetch_order_for_update(conn: Connection, order_id: int):

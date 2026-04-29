@@ -24,7 +24,7 @@ export default function ShareModal({ product, onClose }) {
 
     if (target === "twitter") {
       window.open(
-        `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(`Check out ${product.title} from ${product.farm_name || "The Editorial Harvest"}`)}`,
+        `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(`Check out ${product.title} from ${product.farm_name || "Harvest Market"}`)}`,
         "_blank",
         "noopener,noreferrer"
       );

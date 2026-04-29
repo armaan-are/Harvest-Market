@@ -1,0 +1,52 @@
+By Milestone #7, you should have at least one "steel thread" user story fully implemented. For the final submission, you are expected to complete the remaining features outlined in your Figma design.
+
+
+
+Note: Feature completion does not guarantee full credit. Submissions will be evaluated on UI/UX design, code quality, and creative execution.
+
+
+
+🛠️ The "Vibe Coding" & AI Policy
+
+
+You are encouraged to use AI (vibe coding) for refactoring, debugging, and fixing existing code. However:
+
+Prohibited: Using AI to automatically generate entire "fresh" features or core logic from scratch.
+Requirement: You must explicitly document how AI was used throughout your project.
+Quality Scale: The fewer features you implement, the higher the standard of quality we will expect for the remaining work.
+
+
+
+
+📦 Deliverables
+
+
+1. Recorded Video Presentation (5–10 Minutes)
+
+
+Submit a recording via Zoom or Webex. Every team member must speak. The presentation should cover:
+
+The Pitch: An overview of functionality and UI, presented as if pitching to potential clients.
+Technical Tour: A demonstration of your GitHub repository, source code, and GitHub workflow.
+Collaboration: An explanation of your team’s communication and development process.
+
+
+2. Cleaned and Organized Code Repository
+
+
+Organization: Remove all intermediate or unnecessary files. Include only what is required to execute the application.
+Documentation: A comprehensive README.md file is required. It must include:
+Step-by-step execution instructions.
+Documentation of AI/Vibe Coding usage.
+Specific sections for any Extra Credit attempts.
+
+
+3. Team Evaluation Form
+All students must submit the individual team evaluation form via HCT. This is a separate link and is a mandatory component of your final grade.
+
+
+
+🌟 Extra Credit
+
+
+To explore opportunities for extra credit, please refer to the specific project requirements document. Ensure all extra credit work is clearly labeled in your README.
